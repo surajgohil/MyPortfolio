@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ES6 Mastery — Learn JavaScript the Fun Way</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0b0c0e;
+  --surface: #111316;
+  --surface2: #161820;
+  --border: #1e2128;
+  --accent: #c8f562;
+  --accent2: #62d4f5;
+  --accent3: #f5a623;
+  --muted: #4a4f5c;
+  --text: #e8eaf0;
+  --text-dim: #7a8090;
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-serif: 'Fraunces', serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── CURSOR ── */
+#cursor {
+  position: fixed; width: 12px; height: 12px;
+  background: var(--accent); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transition: transform 0.15s ease, opacity 0.3s;
+  mix-blend-mode: difference;
+}
+#cursor-ring {
+  position: fixed; width: 36px; height: 36px;
+  border: 1px solid rgba(200,245,98,0.4); border-radius: 50%;
+  pointer-events: none; z-index: 9998;
+  transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), width 0.3s, height 0.3s;
+}
+
+/* ── NOISE ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 100; opacity: 0.4;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.4rem 3rem;
+  backdrop-filter: blur(20px);
+  background: rgba(11,12,14,0.7);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.4s;
+}
+nav.scrolled { border-color: var(--border); }
+
+.nav-logo {
+  font-family: var(--font-mono); font-size: 0.8rem;
+  color: var(--accent); letter-spacing: 0.1em;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.nav-logo-dot {
+  width: 8px; height: 8px; background: var(--accent);
+  border-radius: 50%; animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(200,245,98,0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(200,245,98,0); }
+}
+
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a {
+  font-family: var(--font-mono); font-size: 0.72rem;
+  color: var(--text-dim); text-decoration: none;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  transition: color 0.2s; cursor: none;
+}
+.nav-links a:hover { color: var(--accent); }
+
+.nav-badge {
+  font-family: var(--font-mono); font-size: 0.68rem;
+  background: rgba(200,245,98,0.1); color: var(--accent);
+  border: 1px solid rgba(200,245,98,0.25);
+  padding: 0.35rem 1rem; border-radius: 2px;
+  letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem;
+}
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-items: center; padding: 0 3rem; gap: 4rem;
+  position: relative; overflow: hidden;
+}
+
+.hero-grid-bg {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px; opacity: 0.35;
+}
+.hero-grid-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 60% at 30% 50%, transparent 30%, var(--bg) 80%);
+}
+
+.hero-left { position: relative; z-index: 2; }
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-mono); font-size: 0.7rem;
+  color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase;
+  border: 1px solid rgba(200,245,98,0.25); padding: 0.35rem 0.9rem;
+  border-radius: 2px; margin-bottom: 2rem;
+  opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+}
+.hero-tag::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--accent); border-radius: 50%; animation: pulse 2s infinite;
+}
+
+.hero-name {
+  font-size: clamp(3rem, 5.5vw, 5.5rem);
+  font-weight: 800; line-height: 0.95; letter-spacing: -0.03em;
+  opacity: 0; animation: fadeUp 0.9s 0.4s forwards;
+}
+.hero-name span {
+  display: block; font-family: var(--font-serif);
+  font-style: italic; font-weight: 300;
+  color: var(--text-dim); font-size: clamp(1.8rem, 3vw, 3rem);
+  margin-top: 0.3rem;
+}
+
+.hero-role {
+  margin-top: 1.8rem; font-family: var(--font-mono);
+  font-size: 0.85rem; color: var(--text-dim);
+  line-height: 1.9; max-width: 440px;
+  opacity: 0; animation: fadeUp 0.9s 0.6s forwards;
+}
+.hero-role em { color: var(--accent2); font-style: normal; }
+
+.hero-cta {
+  display: flex; gap: 1rem; margin-top: 2.5rem;
+  opacity: 0; animation: fadeUp 0.9s 0.8s forwards;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.8rem 1.8rem; font-family: var(--font-mono);
+  font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  text-decoration: none; border-radius: 3px; transition: all 0.25s; cursor: none;
+  border: none; font-weight: 600;
+}
+.btn-primary { background: var(--accent); color: #0b0c0e; }
+.btn-primary:hover { background: #d8ff70; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,245,98,0.25); }
+.btn-outline { border: 1px solid var(--border); color: var(--text-dim); background: transparent; }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+/* Hero right — topic cluster */
+.hero-right {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; gap: 1rem;
+  opacity: 0; animation: fadeLeft 1s 0.5s forwards;
+}
+
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1.2rem 1.6rem;
+  display: flex; align-items: center; gap: 1.2rem;
+  transition: border-color 0.3s, transform 0.3s; cursor: none;
+}
+.stat-card:hover { border-color: var(--accent); transform: translateX(-6px); }
+
+.stat-num {
+  font-size: 2rem; font-weight: 800; color: var(--accent);
+  line-height: 1; min-width: 56px; font-variant-numeric: tabular-nums;
+}
+.stat-label {
+  font-family: var(--font-mono); font-size: 0.7rem;
+  color: var(--text-dim); letter-spacing: 0.06em; line-height: 1.6;
+}
+.stat-label strong { display: block; color: var(--text); font-size: 0.85rem; letter-spacing: 0; }
+
+.scroll-hint {
+  position: absolute; bottom: 2rem; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  font-family: var(--font-mono); font-size: 0.65rem;
+  color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase;
+  opacity: 0; animation: fadeUp 1s 1.2s forwards;
+}
+.scroll-line {
+  width: 1px; height: 50px;
+  background: linear-gradient(to bottom, var(--muted), transparent);
+  animation: scrollDown 2s infinite;
+}
+@keyframes scrollDown {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  51% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* ── SECTIONS ── */
+section { padding: 7rem 3rem; }
+
+.section-header {
+  display: flex; align-items: center; gap: 1.5rem; margin-bottom: 4rem;
+}
+.section-num { font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent); letter-spacing: 0.1em; }
+.section-title { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800; letter-spacing: -0.02em; }
+.section-line { flex: 1; height: 1px; background: var(--border); }
+
+/* ── HOW TO LEARN ── */
+#howto { background: var(--surface); }
+
+.howto-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+}
+
+.howto-card {
+  border: 1px solid var(--border); border-radius: 10px; padding: 2rem;
+  position: relative; overflow: hidden;
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s, transform 0.6s, border-color 0.3s;
+}
+.howto-card.visible { opacity: 1; transform: translateY(0); }
+.howto-card:hover { border-color: var(--accent); }
+.howto-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transform: scaleX(0); transform-origin: left; transition: transform 0.4s;
+}
+.howto-card:hover::before { transform: scaleX(1); }
+
+.howto-num {
+  font-family: var(--font-mono); font-size: 3rem; font-weight: 800;
+  color: rgba(200,245,98,0.08); line-height: 1; margin-bottom: 1rem;
+}
+.howto-icon { font-size: 2rem; margin-bottom: 1rem; }
+.howto-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+.howto-desc {
+  font-family: var(--font-mono); font-size: 0.75rem;
+  color: var(--text-dim); line-height: 1.8;
+}
+
+/* ── TOPICS TIMELINE ── */
+#topics { }
+
+.timeline {
+  position: relative; padding-left: 3rem;
+}
+.timeline::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 1px; background: var(--border);
+}
+
+.timeline-item {
+  position: relative; margin-bottom: 3rem;
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.7s, transform 0.7s;
+}
+.timeline-item.visible { opacity: 1; transform: translateY(0); }
+
+.timeline-dot {
+  position: absolute; left: -3.35rem; top: 0.6rem;
+  width: 14px; height: 14px;
+  border: 2px solid var(--accent); background: var(--bg);
+  border-radius: 50%; transition: background 0.2s, box-shadow 0.2s;
+}
+.timeline-item:hover .timeline-dot { background: var(--accent); box-shadow: 0 0 12px rgba(200,245,98,0.4); }
+
+.timeline-meta {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; flex-wrap: wrap;
+}
+.timeline-tag {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  color: var(--accent); letter-spacing: 0.1em;
+  background: rgba(200,245,98,0.08); padding: 0.25rem 0.7rem; border-radius: 2px;
+}
+.timeline-tag.cyan { color: var(--accent2); background: rgba(98,212,245,0.08); }
+.timeline-tag.amber { color: var(--accent3); background: rgba(245,166,35,0.08); }
+
+.timeline-topic {
+  font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 0.5rem;
+  cursor: pointer; transition: color 0.2s;
+}
+.timeline-topic:hover { color: var(--accent); }
+
+.timeline-desc {
+  font-family: var(--font-mono); font-size: 0.8rem;
+  color: var(--text-dim); line-height: 1.8; max-width: 680px; margin-bottom: 1.2rem;
+}
+
+/* Code preview inside timeline */
+.code-preview {
+  background: #0a0b0d; border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+  max-height: 0; transition: max-height 0.5s cubic-bezier(0.23,1,0.32,1);
+}
+.timeline-item.expanded .code-preview { max-height: 600px; }
+
+.code-preview-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.7rem 1.2rem;
+  background: var(--surface2); border-bottom: 1px solid var(--border);
+}
+.code-preview-header span {
+  font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent3);
+  letter-spacing: 0.1em;
+}
+.try-btn {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  background: rgba(200,245,98,0.1); color: var(--accent);
+  border: 1px solid rgba(200,245,98,0.25); padding: 0.3rem 0.9rem;
+  border-radius: 2px; cursor: pointer; transition: all 0.2s;
+}
+.try-btn:hover { background: rgba(200,245,98,0.2); }
+
+.code-preview pre {
+  padding: 1.2rem 1.5rem; font-family: var(--font-mono);
+  font-size: 0.8rem; line-height: 1.9; overflow-x: auto;
+  color: #e8eaf0;
+}
+
+/* syntax */
+.kw { color: #d4a4f5; } .fn { color: #67e8f9; }
+.str { color: #86efac; } .num { color: #fbbf24; }
+.cmt { color: #3d4559; font-style: italic; } .cls { color: #f9a8d4; }
+.op { color: #fb923c; } .acc { color: #c8f562; }
+
+.expand-btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-mono); font-size: 0.7rem;
+  color: var(--text-dim); background: none; border: 1px solid var(--border);
+  padding: 0.4rem 1rem; border-radius: 2px; cursor: pointer;
+  transition: all 0.2s; margin-top: 0.8rem;
+}
+.expand-btn:hover { color: var(--accent); border-color: var(--accent); }
+.expand-btn .arrow { transition: transform 0.3s; }
+.timeline-item.expanded .expand-btn .arrow { transform: rotate(180deg); }
+
+/* ── CONSOLE SECTION ── */
+#console-section { background: var(--surface); }
+
+.console-intro {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start;
+}
+
+.console-intro-text p {
+  font-family: var(--font-mono); font-size: 0.85rem;
+  color: var(--text-dim); line-height: 2; margin-bottom: 1.2rem;
+}
+.console-intro-text p strong { color: var(--accent); font-weight: 400; }
+
+.feature-list { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+.feature-list li {
+  font-family: var(--font-mono); font-size: 0.78rem;
+  color: var(--text-dim); padding-left: 1.4rem; position: relative; line-height: 1.7;
+}
+.feature-list li::before { content: '→'; position: absolute; left: 0; color: var(--accent2); }
+
+/* ── CHROME-LIKE CONSOLE ── */
+.chrome-console {
+  border: 1px solid var(--border); border-radius: 10px;
+  overflow: hidden; background: #0a0b0d;
+}
+
+.chrome-titlebar {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.8rem 1.2rem;
+  background: #13141a; border-bottom: 1px solid var(--border);
+}
+.chrome-dots { display: flex; gap: 6px; }
+.chrome-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+}
+.chrome-dot.red { background: #ff5f57; }
+.chrome-dot.yellow { background: #ffbd2e; }
+.chrome-dot.green { background: #28c840; }
+
+.chrome-tab-bar {
+  display: flex; gap: 0.5rem; margin-left: 0.5rem; flex: 1;
+}
+.chrome-tab {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  color: var(--text-dim); padding: 0.3rem 1rem;
+  border-radius: 3px 3px 0 0; cursor: pointer; transition: all 0.2s;
+  border: 1px solid transparent; border-bottom: none;
+}
+.chrome-tab.active { background: #0a0b0d; color: var(--text); border-color: var(--border); }
+.chrome-tab:not(.active):hover { color: var(--accent); }
+
+.chrome-body {
+  display: flex; flex-direction: column;
+  height: 420px;
+}
+
+/* Editor panel */
+.editor-panel {
+  flex: 1; display: flex; flex-direction: column; border-bottom: 1px solid var(--border);
+}
+
+.editor-toolbar {
+  display: flex; align-items: center; gap: 0.8rem;
+  padding: 0.5rem 1rem; background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.editor-toolbar-label {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  color: var(--text-dim); letter-spacing: 0.1em; flex: 1;
+}
+.snippet-select {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  background: rgba(200,245,98,0.05); color: var(--text-dim);
+  border: 1px solid var(--border); padding: 0.25rem 0.6rem;
+  border-radius: 2px; cursor: pointer; outline: none;
+}
+.snippet-select:focus { border-color: var(--accent); color: var(--text); }
+.snippet-select option { background: #0a0b0d; }
+
+.run-btn {
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700;
+  background: var(--accent); color: #0b0c0e;
+  border: none; padding: 0.4rem 1.2rem; border-radius: 2px;
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.08em;
+}
+.run-btn:hover { background: #d8ff70; transform: translateY(-1px); }
+.run-btn:active { transform: translateY(0); }
+
+.clear-btn {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border); padding: 0.4rem 0.8rem;
+  border-radius: 2px; cursor: pointer; transition: all 0.2s;
+}
+.clear-btn:hover { color: #ef4444; border-color: #ef4444; }
+
+.editor-wrapper {
+  position: relative; flex: 1; display: flex; overflow: hidden;
+}
+
+.line-nums {
+  padding: 0.8rem 0.6rem; background: #0d0e12;
+  border-right: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: 0.75rem;
+  line-height: 1.6rem; color: var(--muted); text-align: right;
+  min-width: 36px; user-select: none; overflow: hidden;
+}
+
+.code-editor {
+  flex: 1; padding: 0.8rem 1rem; border: none; outline: none;
+  background: transparent; color: var(--text);
+  font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.6rem;
+  resize: none; overflow-y: auto; tab-size: 2; caret-color: var(--accent);
+  white-space: pre; word-break: normal; overflow-wrap: normal;
+}
+
+/* Output panel */
+.output-panel {
+  height: 200px; overflow-y: auto; padding: 0.5rem 0;
+  font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.7;
+}
+
+.output-line {
+  display: flex; align-items: flex-start; gap: 0.6rem;
+  padding: 0.15rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.02);
+  transition: background 0.15s;
+}
+.output-line:hover { background: rgba(255,255,255,0.02); }
+
+.output-gutter {
+  font-size: 0.65rem; color: var(--muted); min-width: 16px;
+  padding-top: 0.1rem; flex-shrink: 0; user-select: none;
+}
+.output-content { flex: 1; word-break: break-all; white-space: pre-wrap; }
+
+.out-log .output-content { color: var(--text); }
+.out-error .output-gutter { color: #ef4444; }
+.out-error .output-content { color: #fca5a5; }
+.out-warn .output-gutter { color: #f59e0b; }
+.out-warn .output-content { color: #fcd34d; }
+.out-info .output-gutter { color: var(--accent2); }
+.out-info .output-content { color: var(--accent2); }
+.out-return .output-gutter { color: var(--accent); }
+.out-return .output-content { color: var(--accent); }
+.out-cmd .output-gutter { color: #a78bfa; }
+.out-cmd .output-content { color: #c4b5fd; }
+
+/* Object tree */
+.obj-tree { }
+.obj-toggle {
+  cursor: pointer; color: var(--accent2);
+  background: none; border: none; font-family: var(--font-mono);
+  font-size: 0.78rem; padding: 0; transition: color 0.2s;
+}
+.obj-toggle:hover { color: var(--accent); }
+.obj-children {
+  padding-left: 1.4rem;
+  border-left: 1px solid rgba(255,255,255,0.06); margin-left: 0.2rem;
+  display: none;
+}
+.obj-children.open { display: block; }
+.obj-key { color: #f9a8d4; }
+.obj-colon { color: var(--muted); }
+.obj-string { color: #86efac; }
+.obj-number { color: #fbbf24; }
+.obj-bool { color: #d4a4f5; }
+.obj-null { color: var(--muted); font-style: italic; }
+.obj-func { color: var(--accent2); font-style: italic; }
+.obj-proto { color: var(--muted); font-size: 0.7rem; }
+
+/* Input line */
+.console-input-row {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.5rem 1rem; background: var(--surface2);
+  border-top: 1px solid var(--border);
+}
+.input-prompt { color: var(--accent); font-family: var(--font-mono); font-size: 0.8rem; flex-shrink: 0; }
+.console-repl {
+  flex: 1; background: transparent; border: none; outline: none;
+  font-family: var(--font-mono); font-size: 0.78rem;
+  color: var(--text); caret-color: var(--accent);
+}
+
+/* Quick snippets */
+.snippets-row {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.6rem 1rem;
+  background: #0d0e12; border-top: 1px solid var(--border);
+}
+.snippet-chip {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  color: var(--text-dim); background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); padding: 0.25rem 0.7rem;
+  border-radius: 2px; cursor: pointer; transition: all 0.15s;
+}
+.snippet-chip:hover { color: var(--accent2); border-color: var(--accent2); background: rgba(98,212,245,0.05); }
+
+/* ── SKILLS ── */
+#skills { }
+
+.skills-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;
+}
+
+.skill-group {
+  border: 1px solid var(--border); border-radius: 8px; padding: 1.8rem;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.6s, transform 0.6s, border-color 0.3s;
+}
+.skill-group.visible { opacity: 1; transform: translateY(0); }
+.skill-group:hover { border-color: var(--accent); }
+
+.skill-group-title {
+  font-family: var(--font-mono); font-size: 0.68rem;
+  color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.6rem;
+}
+.skill-group-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.skill-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.skill-tag {
+  font-family: var(--font-mono); font-size: 0.72rem;
+  color: var(--text-dim); background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); padding: 0.3rem 0.8rem; border-radius: 2px;
+  transition: all 0.2s; cursor: default;
+}
+.skill-tag:hover { color: var(--accent2); border-color: var(--accent2); background: rgba(98,212,245,0.05); }
+
+/* ── CHEATSHEET / COMPARE ── */
+#cheatsheet { background: var(--surface); }
+
+.compare-table-wrap { overflow-x: auto; }
+.compare-table {
+  width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.78rem;
+}
+.compare-table th {
+  background: var(--surface2); padding: 0.8rem 1.2rem;
+  text-align: left; font-size: 0.65rem; letter-spacing: 0.1em;
+  color: var(--text-dim); border: 1px solid var(--border);
+  text-transform: uppercase;
+}
+.compare-table td {
+  padding: 0.75rem 1.2rem; border: 1px solid var(--border);
+  color: var(--text-dim); line-height: 1.6;
+}
+.compare-table tr:hover td { background: rgba(255,255,255,0.015); }
+.td-good { color: var(--accent) !important; }
+.td-bad { color: #f87171 !important; }
+.td-code { color: var(--accent2) !important; font-style: italic; }
+
+/* ── FOOTER ── */
+footer {
+  padding: 4rem 3rem; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1.5rem;
+}
+.footer-brand { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+.footer-brand span { color: var(--accent); }
+.footer-copy { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
+.footer-links { display: flex; gap: 1.5rem; }
+.footer-links a {
+  font-family: var(--font-mono); font-size: 0.72rem;
+  color: var(--text-dim); text-decoration: none; transition: color 0.2s; cursor: none;
+}
+.footer-links a:hover { color: var(--accent); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeLeft {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* floating particles */
+.particle {
+  position: fixed; width: 3px; height: 3px;
+  background: var(--accent); border-radius: 50%;
+  pointer-events: none; z-index: 1; opacity: 0;
+  animation: floatUp var(--dur, 8s) var(--delay, 0s) infinite linear;
+}
+@keyframes floatUp {
+  0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+  10% { opacity: 0.4; }
+  90% { opacity: 0.1; }
+  100% { transform: translateY(-20vh) translateX(var(--drift, 30px)); opacity: 0; }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .howto-grid { grid-template-columns: 1fr 1fr; }
+  .console-intro { grid-template-columns: 1fr; gap: 2.5rem; }
+}
+@media (max-width: 900px) {
+  nav { padding: 1.2rem 1.5rem; }
+  .nav-links { display: none; }
+  #hero { grid-template-columns: 1fr; padding: 6rem 1.5rem 3rem; }
+  .hero-right { display: none; }
+  section { padding: 5rem 1.5rem; }
+  .howto-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; text-align: center; padding: 3rem 1.5rem; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- Particles -->
+<div id="particles"></div>
+
+<!-- ── NAV ── -->
+<nav id="navbar">
+  <div class="nav-logo">
+    <div class="nav-logo-dot"></div>
+    ES6.LEARN
+  </div>
+  <ul class="nav-links">
+    <li><a href="#howto">Start</a></li>
+    <li><a href="#topics">Topics</a></li>
+    <li><a href="#console-section">Console</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#cheatsheet">Cheatsheet</a></li>
+  </ul>
+  <div class="nav-badge"><span>●</span> ES2015 – ES2023</div>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+
+  <div class="hero-left">
+    <div class="hero-tag">Interactive JavaScript Learning</div>
+    <h1 class="hero-name">
+      Master<br/>ES6+
+      <span>Modern JavaScript</span>
+    </h1>
+    <p class="hero-role">
+      Learn every ES6–ES2023 feature through <em>live examples</em>, interactive code,<br/>
+      and a built-in Chrome-style console.<br/>
+      <em>Edit. Run. Learn. Repeat.</em>
+    </p>
+    <div class="hero-cta">
+      <a href="#topics" class="btn btn-primary">Start Learning ↓</a>
+      <a href="#console-section" class="btn btn-outline">Open Console</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="stat-card">
+      <div class="stat-num">22</div>
+      <div class="stat-label"><strong>Topics Covered</strong>ES2015 through ES2023</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">80+</div>
+      <div class="stat-label"><strong>Code Examples</strong>Editable &amp; runnable</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">∞</div>
+      <div class="stat-label"><strong>Practice Sessions</strong>Live console, no limits</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">0</div>
+      <div class="stat-label"><strong>Setup Required</strong>Run directly in browser</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── HOW TO LEARN ── -->
+<section id="howto">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Learn with Fun</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="howto-grid">
+    <div class="howto-card">
+      <div class="howto-num">01</div>
+      <div class="howto-icon">📖</div>
+      <div class="howto-title">Read the Concept</div>
+      <div class="howto-desc">Each topic opens with a clear explanation — what it does, why it exists, and when to use it. No jargon, just developer-speak.</div>
+    </div>
+    <div class="howto-card">
+      <div class="howto-num">02</div>
+      <div class="howto-icon">👁</div>
+      <div class="howto-title">Study the Example</div>
+      <div class="howto-desc">Click any topic to expand syntax-highlighted code. Every example is a real-world pattern — not toy snippets.</div>
+    </div>
+    <div class="howto-card">
+      <div class="howto-num">03</div>
+      <div class="howto-icon">⚡</div>
+      <div class="howto-title">Run It Live</div>
+      <div class="howto-desc">Hit "Try in Console" to load the code into the editor below. Modify it, run it, and watch Chrome-style output — with collapsible objects.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TOPICS TIMELINE ── -->
+<section id="topics">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">All Topics</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="timeline" id="topicsTimeline">
+
+    <!-- Each item generated by JS below -->
+
+  </div>
+</section>
+
+<!-- ── CONSOLE SECTION ── -->
+<section id="console-section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Interactive Console</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="console-intro">
+    <div class="console-intro-text">
+      <p>A full <strong>Chrome DevTools–style JavaScript console</strong> built right into the page. Write multi-line code in the editor, hit Run, and see rich output — including collapsible object trees, arrays, errors, and warnings.</p>
+      <p>Use it to test every ES6 feature you learn, or <strong>click "Try in Console"</strong> on any topic above to load that snippet automatically.</p>
+      <ul class="feature-list">
+        <li>Collapsible object & array inspection (like Chrome)</li>
+        <li>Color-coded log / warn / error / return values</li>
+        <li>Editable multi-line code with line numbers</li>
+        <li>Quick-snippet chips for instant examples</li>
+        <li>REPL input line for one-liners</li>
+        <li>Full command history with ↑ / ↓ arrows</li>
+      </ul>
+    </div>
+
+    <!-- Chrome Console -->
+    <div class="chrome-console">
+      <div class="chrome-titlebar">
+        <div class="chrome-dots">
+          <div class="chrome-dot red"></div>
+          <div class="chrome-dot yellow"></div>
+          <div class="chrome-dot green"></div>
+        </div>
+        <div class="chrome-tab-bar">
+          <div class="chrome-tab active">Console</div>
+          <div class="chrome-tab">Sources</div>
+        </div>
+      </div>
+
+      <div class="chrome-body">
+        <!-- Editor -->
+        <div class="editor-panel">
+          <div class="editor-toolbar">
+            <span class="editor-toolbar-label">// editor.js</span>
+            <select class="snippet-select" id="snippetSelect" onchange="loadSnippet(this.value)">
+              <option value="">Load snippet…</option>
+              <option value="arrow">Arrow Functions</option>
+              <option value="destruct">Destructuring</option>
+              <option value="spread">Rest & Spread</option>
+              <option value="class">Classes</option>
+              <option value="promise">Promises</option>
+              <option value="async">Async / Await</option>
+              <option value="map">Map & Set</option>
+              <option value="generator">Generators</option>
+              <option value="proxy">Proxy</option>
+              <option value="optional">Optional Chaining</option>
+            </select>
+            <button class="clear-btn" onclick="clearOutput()">Clear</button>
+            <button class="run-btn" onclick="runCode()">▶ Run</button>
+          </div>
+          <div class="editor-wrapper">
+            <div class="line-nums" id="lineNums">1</div>
+            <textarea class="code-editor" id="codeEditor" spellcheck="false" autocorrect="off" autocapitalize="off"
+              onkeydown="handleEditorKey(event)"
+              oninput="updateLineNums()"
+            >// Welcome to the ES6 Interactive Console!
+// Edit this code and click ▶ Run
+
+const greet = (name = 'World') => `Hello, ${name}!`;
+console.log(greet());
+console.log(greet('ES6'));
+
+// Destructuring
+const user = { name: 'Alice', age: 30, city: 'Ahmedabad' };
+const { name, ...rest } = user;
+console.log(name);
+console.log(rest);
+
+// Spread + Array methods
+const nums = [3, 1, 4, 1, 5, 9, 2, 6];
+const unique = [...new Set(nums)].sort((a,b) => a-b);
+console.log(unique);</textarea>
+          </div>
+        </div>
+
+        <!-- Output -->
+        <div class="output-panel" id="outputPanel">
+          <div class="output-line out-info">
+            <span class="output-gutter">ℹ</span>
+            <span class="output-content">Console ready. Click ▶ Run or press Ctrl+Enter.</span>
+          </div>
+        </div>
+
+        <!-- REPL input -->
+        <div class="console-input-row">
+          <span class="input-prompt">&gt;</span>
+          <input class="console-repl" id="replInput" type="text" spellcheck="false"
+            placeholder="Type an expression and press Enter…"
+            onkeydown="handleReplKey(event)"/>
+        </div>
+
+        <!-- Quick snippets -->
+        <div class="snippets-row" id="quickSnippets">
+          <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);align-self:center">Quick →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SKILLS (ES6 Feature Coverage) ── -->
+<section id="skills">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">Feature Coverage</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-group">
+      <div class="skill-group-title">ES2015 (ES6)</div>
+      <div class="skill-tags">
+        <span class="skill-tag">let &amp; const</span><span class="skill-tag">Arrow Functions</span>
+        <span class="skill-tag">Template Literals</span><span class="skill-tag">Destructuring</span>
+        <span class="skill-tag">Default Params</span><span class="skill-tag">Rest / Spread</span>
+        <span class="skill-tag">Classes</span><span class="skill-tag">Modules</span>
+        <span class="skill-tag">Promises</span><span class="skill-tag">Symbol</span>
+        <span class="skill-tag">Map &amp; Set</span><span class="skill-tag">Generators</span>
+        <span class="skill-tag">Proxy &amp; Reflect</span><span class="skill-tag">for…of</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-title">ES2017 – ES2019</div>
+      <div class="skill-tags">
+        <span class="skill-tag">Async / Await</span><span class="skill-tag">padStart / padEnd</span>
+        <span class="skill-tag">Object.values</span><span class="skill-tag">Object.entries</span>
+        <span class="skill-tag">Array.flat</span><span class="skill-tag">flatMap</span>
+        <span class="skill-tag">trimStart / trimEnd</span><span class="skill-tag">Object.fromEntries</span>
+        <span class="skill-tag">Optional catch</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-title">ES2020 – ES2023</div>
+      <div class="skill-tags">
+        <span class="skill-tag">Optional Chaining</span><span class="skill-tag">Nullish ??</span>
+        <span class="skill-tag">Promise.allSettled</span><span class="skill-tag">BigInt</span>
+        <span class="skill-tag">replaceAll</span><span class="skill-tag">Logical Assignment</span>
+        <span class="skill-tag">Array.at()</span><span class="skill-tag">Object.hasOwn</span>
+        <span class="skill-tag">toSorted / toReversed</span><span class="skill-tag">findLast</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CHEATSHEET ── -->
+<section id="cheatsheet">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">Quick Reference</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="compare-table-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Old Way</th>
+          <th>ES6+ Way</th>
+          <th>Benefit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Variables</td><td class="td-bad">var x = 1</td><td class="td-code">const / let x = 1</td><td class="td-good">Block scope, no hoisting surprises</td></tr>
+        <tr><td>Functions</td><td class="td-bad">function(a,b){ return a+b }</td><td class="td-code">(a,b) =&gt; a+b</td><td class="td-good">Concise, lexical this</td></tr>
+        <tr><td>Strings</td><td class="td-bad">"Hi " + name + "!"</td><td class="td-code">`Hi ${name}!`</td><td class="td-good">Interpolation, multi-line</td></tr>
+        <tr><td>Object props</td><td class="td-bad">{ name: name, age: age }</td><td class="td-code">{ name, age }</td><td class="td-good">Shorthand, less repetition</td></tr>
+        <tr><td>Unpack values</td><td class="td-bad">var x = arr[0]; var y = arr[1]</td><td class="td-code">const [x, y] = arr</td><td class="td-good">Destructuring, cleaner code</td></tr>
+        <tr><td>Merge objects</td><td class="td-bad">Object.assign({}, a, b)</td><td class="td-code">{ ...a, ...b }</td><td class="td-good">Spread, readable merging</td></tr>
+        <tr><td>Async</td><td class="td-bad">callbacks / .then chains</td><td class="td-code">async / await</td><td class="td-good">Readable, try/catch errors</td></tr>
+        <tr><td>Null check</td><td class="td-bad">x &amp;&amp; x.y &amp;&amp; x.y.z</td><td class="td-code">x?.y?.z</td><td class="td-good">Optional chaining, no crashes</td></tr>
+        <tr><td>Default value</td><td class="td-bad">x !== undefined ? x : 'def'</td><td class="td-code">x ?? 'def'</td><td class="td-good">Nullish coalescing, precise</td></tr>
+        <tr><td>Unique values</td><td class="td-bad">filter + indexOf</td><td class="td-code">[...new Set(arr)]</td><td class="td-good">Set deduplication, instant</td></tr>
+        <tr><td>OOP</td><td class="td-bad">function Constructor() + prototype</td><td class="td-code">class + extends</td><td class="td-good">Clean OOP syntax</td></tr>
+        <tr><td>Iteration</td><td class="td-bad">for (var i=0; i&lt;arr.length; i++)</td><td class="td-code">for (const x of arr)</td><td class="td-good">Iterable protocol, clean</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-brand">ES6<span>.</span>LEARN</div>
+  <div class="footer-copy">// Built for developers who learn by doing</div>
+  <div class="footer-links">
+    <a href="#hero">Top</a>
+    <a href="#topics">Topics</a>
+    <a href="#console-section">Console</a>
+  </div>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════
+// CURSOR
+// ══════════════════════════════════════════════
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.transform = `translate(${mx-6}px, ${my-6}px)`;
+});
+
+function animRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  cursorRing.style.transform = `translate(${rx-18}px, ${ry-18}px)`;
+  requestAnimationFrame(animRing);
+}
+animRing();
+
+document.querySelectorAll('a, button, .stat-card, .timeline-topic, .howto-card, .skill-tag, .snippet-chip, .obj-toggle').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.transform += ' scale(1.8)';
+    cursorRing.style.width = '54px'; cursorRing.style.height = '54px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursorRing.style.width = '36px'; cursorRing.style.height = '36px';
+  });
+});
+
+// ══════════════════════════════════════════════
+// NAV SCROLL
+// ══════════════════════════════════════════════
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// ══════════════════════════════════════════════
+// PARTICLES
+// ══════════════════════════════════════════════
+const pContainer = document.getElementById('particles');
+for (let i = 0; i < 18; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.cssText = `left:${Math.random()*100}%;--dur:${7+Math.random()*10}s;--delay:${Math.random()*8}s;--drift:${(Math.random()-0.5)*80}px;opacity:0;`;
+  pContainer.appendChild(p);
+}
+
+// ══════════════════════════════════════════════
+// TOPICS DATA
+// ══════════════════════════════════════════════
+const topics = [
+  {
+    num: '01', tag: 'ES2015', tagType: '',
+    title: 'let & const',
+    desc: 'Block-scoped variable declarations. <code style="color:#86efac">let</code> is reassignable; <code style="color:#86efac">const</code> is not. Both live only inside the <code>{}</code> block they\'re declared in — unlike <code style="color:#f87171">var</code> which is function-scoped.',
+    code: `<span class="cmt">// let — block scoped, reassignable</span>
+<span class="kw">let</span> <span class="acc">score</span> = <span class="num">0</span>;
+<span class="acc">score</span> = <span class="num">10</span>;  <span class="cmt">// ✅ OK</span>
+
+<span class="kw">if</span> (<span class="kw">true</span>) {
+  <span class="kw">let</span> <span class="acc">blockVar</span> = <span class="str">"inside"</span>;
+  console.<span class="fn">log</span>(<span class="acc">blockVar</span>); <span class="cmt">// "inside"</span>
+}
+<span class="cmt">// console.log(blockVar) → ReferenceError!</span>
+
+<span class="cmt">// const — cannot be reassigned</span>
+<span class="kw">const</span> <span class="acc">PI</span> = <span class="num">3.14159</span>;
+
+<span class="cmt">// const objects ARE mutable!</span>
+<span class="kw">const</span> <span class="acc">user</span> = { <span class="acc">name</span>: <span class="str">"Alice"</span> };
+<span class="acc">user</span>.<span class="acc">name</span> = <span class="str">"Bob"</span>;  <span class="cmt">// ✅ OK — mutating, not reassigning</span>
+console.<span class="fn">log</span>(<span class="acc">user</span>);`,
+    tryCode: `let score = 0;\nscore = 100;\nconsole.log('score:', score);\n\nconst user = { name: 'Alice', age: 30 };\nuser.age = 31;\nconsole.log(user);\n\nconst nums = [1,2,3];\nnums.push(4);\nconsole.log(nums);`
+  },
+  {
+    num: '02', tag: 'ES2015', tagType: '',
+    title: 'Arrow Functions',
+    desc: 'Shorter function syntax using <code style="color:#86efac">=&gt;</code>. Arrow functions do not have their own <code>this</code> — they inherit it from the surrounding scope (lexical this). Perfect for callbacks.',
+    code: `<span class="cmt">// Traditional</span>
+<span class="kw">function</span> <span class="fn">add</span>(<span class="acc">a</span>, <span class="acc">b</span>) { <span class="kw">return</span> <span class="acc">a</span> + <span class="acc">b</span>; }
+
+<span class="cmt">// Arrow variants</span>
+<span class="kw">const</span> <span class="fn">add</span>    = (<span class="acc">a</span>, <span class="acc">b</span>) <span class="op">=></span> <span class="acc">a</span> + <span class="acc">b</span>;       <span class="cmt">// implicit return</span>
+<span class="kw">const</span> <span class="fn">double</span> = <span class="acc">x</span> <span class="op">=></span> <span class="acc">x</span> * <span class="num">2</span>;             <span class="cmt">// single param</span>
+<span class="kw">const</span> <span class="fn">greet</span>  = () <span class="op">=></span> <span class="str">"Hello!"</span>;         <span class="cmt">// no params</span>
+
+<span class="cmt">// Block body — explicit return needed</span>
+<span class="kw">const</span> <span class="fn">mult</span> = (<span class="acc">a</span>, <span class="acc">b</span>) <span class="op">=></span> {
+  <span class="kw">return</span> <span class="acc">a</span> * <span class="acc">b</span>;
+};
+
+<span class="cmt">// Return object — wrap in ()</span>
+<span class="kw">const</span> <span class="fn">makeUser</span> = <span class="acc">name</span> <span class="op">=></span> ({ <span class="acc">name</span>, <span class="acc">id</span>: <span class="num">1</span> });
+
+<span class="cmt">// Lexical this — arrow keeps outer context</span>
+<span class="kw">const</span> <span class="acc">nums</span> = [<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>,<span class="num">5</span>];
+<span class="kw">const</span> <span class="acc">evens</span> = <span class="acc">nums</span>.<span class="fn">filter</span>(<span class="acc">n</span> <span class="op">=></span> <span class="acc">n</span> % <span class="num">2</span> === <span class="num">0</span>);
+<span class="kw">const</span> <span class="acc">sum</span>   = <span class="acc">nums</span>.<span class="fn">reduce</span>((<span class="acc">a</span>, <span class="acc">b</span>) <span class="op">=></span> <span class="acc">a</span> + <span class="acc">b</span>, <span class="num">0</span>);`,
+    tryCode: `const nums = [1,2,3,4,5,6,7,8,9,10];\n\nconst evens   = nums.filter(n => n % 2 === 0);\nconst doubled = nums.map(n => n * 2);\nconst sum     = nums.reduce((a, b) => a + b, 0);\n\nconsole.log('evens:', evens);\nconsole.log('doubled:', doubled);\nconsole.log('sum:', sum);\n\n// Return an object\nconst makeUser = name => ({ name, createdAt: new Date().toISOString() });\nconsole.log(makeUser('Alice'));`
+  },
+  {
+    num: '03', tag: 'ES2015', tagType: '',
+    title: 'Template Literals',
+    desc: 'Use backticks <code style="color:#86efac">` `</code> for strings with embedded expressions via <code style="color:#86efac">${expr}</code>. Supports multi-line strings and tagged templates for custom processing.',
+    code: `<span class="kw">const</span> <span class="acc">name</span> = <span class="str">"Alice"</span>, <span class="acc">age</span> = <span class="num">30</span>;
+
+<span class="cmt">// Interpolation</span>
+console.<span class="fn">log</span>(<span class="str">\`Hello \${<span class="acc">name</span>}, you are \${<span class="acc">age</span>}!\`</span>);
+
+<span class="cmt">// Expression inside \${}</span>
+console.<span class="fn">log</span>(<span class="str">\`Status: \${<span class="acc">age</span> >= <span class="num">18</span> ? <span class="str">'Adult'</span> : <span class="str">'Minor'</span>}\`</span>);
+
+<span class="cmt">// Multi-line</span>
+<span class="kw">const</span> <span class="acc">html</span> = <span class="str">\`
+  &lt;div&gt;
+    &lt;h2&gt;\${<span class="acc">name</span>}&lt;/h2&gt;
+    &lt;p&gt;Age: \${<span class="acc">age</span>}&lt;/p&gt;
+  &lt;/div&gt;
+\`</span>;`,
+    tryCode: `const name = 'Suraj';\nconst lang = 'JavaScript';\nconst year = new Date().getFullYear();\n\nconsole.log(\`Hi \${name}! Learning \${lang} in \${year}.\`);\nconsole.log(\`2 + 2 = \${2 + 2}\`);\n\nconst items = ['React', 'Node', 'SQL'];\nconsole.log(\`Skills: \${items.map(i => \`[\${i}]\`).join(' ')}\`);`
+  },
+  {
+    num: '04', tag: 'ES2015', tagType: '',
+    title: 'Destructuring',
+    desc: 'Unpack values from arrays or properties from objects into distinct variables. Supports default values, renaming, nested destructuring, and rest patterns.',
+    code: `<span class="cmt">// Array destructuring</span>
+<span class="kw">const</span> [<span class="acc">a</span>, <span class="acc">b</span>, <span class="acc">c</span>] = [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>];
+<span class="kw">const</span> [<span class="acc">first</span>, , <span class="acc">third</span>] = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]; <span class="cmt">// skip</span>
+<span class="kw">const</span> [<span class="acc">x</span> = <span class="num">5</span>, <span class="acc">y</span> = <span class="num">7</span>] = [<span class="num">1</span>]; <span class="cmt">// defaults</span>
+
+<span class="cmt">// Swap variables</span>
+<span class="kw">let</span> <span class="acc">p</span> = <span class="num">1</span>, <span class="acc">q</span> = <span class="num">2</span>;
+[<span class="acc">p</span>, <span class="acc">q</span>] = [<span class="acc">q</span>, <span class="acc">p</span>]; <span class="cmt">// p=2, q=1</span>
+
+<span class="cmt">// Object destructuring</span>
+<span class="kw">const</span> <span class="acc">user</span> = { <span class="acc">name</span>: <span class="str">"Alice"</span>, <span class="acc">age</span>: <span class="num">30</span>, <span class="acc">city</span>: <span class="str">"NYC"</span> };
+<span class="kw">const</span> { <span class="acc">name</span>, <span class="acc">age</span> } = <span class="acc">user</span>;
+<span class="kw">const</span> { <span class="acc">name</span>: <span class="acc">fullName</span>, <span class="acc">city</span> = <span class="str">"Unknown"</span> } = <span class="acc">user</span>; <span class="cmt">// rename + default</span>
+
+<span class="cmt">// In function params</span>
+<span class="kw">const</span> <span class="fn">greet</span> = ({ <span class="acc">name</span>, <span class="acc">age</span> = <span class="num">0</span> }) <span class="op">=></span> <span class="str">\`\${<span class="acc">name</span>}, \${<span class="acc">age</span>}\`</span>;`,
+    tryCode: `const user = { name: 'Alice', role: 'dev', skills: ['JS','PHP','SQL'], address: { city: 'Ahmedabad' } };\n\nconst { name, role, skills: [primary, ...others], address: { city } } = user;\nconsole.log(name, role);\nconsole.log('Primary skill:', primary);\nconsole.log('Other skills:', others);\nconsole.log('City:', city);\n\n// Swap\nlet a = 'hello', b = 'world';\n[a, b] = [b, a];\nconsole.log(a, b);`
+  },
+  {
+    num: '05', tag: 'ES2015', tagType: '',
+    title: 'Rest & Spread',
+    desc: 'The <code style="color:#86efac">...</code> operator collects (rest) or expands (spread). Rest gathers remaining arguments/elements; spread unpacks iterables into positions.',
+    code: `<span class="cmt">// REST — collect into array</span>
+<span class="kw">function</span> <span class="fn">sum</span>(...<span class="acc">nums</span>) {
+  <span class="kw">return</span> <span class="acc">nums</span>.<span class="fn">reduce</span>((<span class="acc">a</span>, <span class="acc">b</span>) <span class="op">=></span> <span class="acc">a</span> + <span class="acc">b</span>, <span class="num">0</span>);
+}
+<span class="fn">sum</span>(<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>); <span class="cmt">// 10</span>
+
+<span class="cmt">// SPREAD — expand array</span>
+<span class="kw">const</span> <span class="acc">a</span> = [<span class="num">1</span>,<span class="num">2</span>], <span class="acc">b</span> = [<span class="num">3</span>,<span class="num">4</span>];
+<span class="kw">const</span> <span class="acc">merged</span> = [...<span class="acc">a</span>, ...<span class="acc">b</span>];  <span class="cmt">// [1,2,3,4]</span>
+
+<span class="cmt">// Spread objects</span>
+<span class="kw">const</span> <span class="acc">base</span>     = { <span class="acc">theme</span>: <span class="str">"dark"</span> };
+<span class="kw">const</span> <span class="acc">settings</span> = { ...<span class="acc">base</span>, <span class="acc">lang</span>: <span class="str">"en"</span> };
+
+<span class="cmt">// Remove duplicates</span>
+<span class="kw">const</span> <span class="acc">unique</span> = [...<span class="kw">new</span> <span class="cls">Set</span>([<span class="num">1</span>,<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>])];
+
+Math.<span class="fn">max</span>(...[<span class="num">3</span>,<span class="num">1</span>,<span class="num">9</span>,<span class="num">2</span>]); <span class="cmt">// 9</span>`,
+    tryCode: `// Rest\nfunction log(level, ...messages) {\n  messages.forEach(m => console.log(\`[\${level}] \${m}\`));\n}\nlog('INFO', 'Server started', 'Listening on 3000');\n\n// Spread\nconst defaults = { theme: 'dark', lang: 'en', fontSize: 14 };\nconst userPrefs = { ...defaults, lang: 'fr', fontSize: 16 };\nconsole.log(userPrefs);\n\n// Clone array without mutation\nconst original = [1,2,3];\nconst clone = [...original];\nclone.push(4);\nconsole.log('original:', original);\nconsole.log('clone:', clone);`
+  },
+  {
+    num: '06', tag: 'ES2015', tagType: '',
+    title: 'Classes & Inheritance',
+    desc: 'Syntactic sugar over prototype-based inheritance. <code style="color:#86efac">class</code>, <code style="color:#86efac">extends</code>, <code style="color:#86efac">super</code>, static methods, getters/setters, and ES2022 private fields with <code style="color:#86efac">#</code>.',
+    code: `<span class="kw">class</span> <span class="cls">Animal</span> {
+  <span class="acc">#energy</span> = <span class="num">100</span>;  <span class="cmt">// private field</span>
+  <span class="fn">constructor</span>(<span class="acc">name</span>) { <span class="kw">this</span>.<span class="acc">name</span> = <span class="acc">name</span>; }
+
+  <span class="fn">speak</span>() { <span class="kw">return</span> <span class="str">\`\${<span class="kw">this</span>.<span class="acc">name</span>} speaks\`</span>; }
+  <span class="kw">get</span> <span class="fn">energy</span>() { <span class="kw">return</span> <span class="kw">this</span>.<span class="acc">#energy</span>; }
+  <span class="kw">static</span> <span class="fn">kingdom</span>() { <span class="kw">return</span> <span class="str">"Animalia"</span>; }
+}
+
+<span class="kw">class</span> <span class="cls">Dog</span> <span class="kw">extends</span> <span class="cls">Animal</span> {
+  <span class="fn">constructor</span>(<span class="acc">name</span>, <span class="acc">breed</span>) {
+    <span class="kw">super</span>(<span class="acc">name</span>);
+    <span class="kw">this</span>.<span class="acc">breed</span> = <span class="acc">breed</span>;
+  }
+  <span class="fn">speak</span>() { <span class="kw">return</span> <span class="str">\`\${<span class="kw">super</span>.<span class="fn">speak</span>()}! Woof!\`</span>; }
+}
+
+<span class="kw">const</span> <span class="acc">dog</span> = <span class="kw">new</span> <span class="cls">Dog</span>(<span class="str">"Rex"</span>, <span class="str">"Lab"</span>);
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="acc">dog</span>.<span class="fn">speak</span>());
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="acc">dog</span> <span class="kw">instanceof</span> <span class="cls">Animal</span>); <span class="cmt">// true</span>`,
+    tryCode: `class Shape {\n  constructor(color = 'black') { this.color = color; }\n  area() { return 0; }\n  toString() { return \`\${this.constructor.name}(color=\${this.color}, area=\${this.area().toFixed(2)})\`; }\n}\n\nclass Circle extends Shape {\n  constructor(r, color) { super(color); this.r = r; }\n  area() { return Math.PI * this.r ** 2; }\n}\n\nclass Rect extends Shape {\n  constructor(w, h, color) { super(color); this.w = w; this.h = h; }\n  area() { return this.w * this.h; }\n}\n\nconst shapes = [new Circle(5, 'red'), new Rect(4, 6, 'blue'), new Circle(3)];\nshapes.forEach(s => console.log(s.toString()));\nconsole.log('Total area:', shapes.reduce((sum, s) => sum + s.area(), 0).toFixed(2));`
+  },
+  {
+    num: '07', tag: 'ES2015', tagType: '',
+    title: 'Promises',
+    desc: 'Represent eventual async results. Chain with <code style="color:#86efac">.then()</code>, handle errors with <code style="color:#86efac">.catch()</code>. Combinators: <code style="color:#86efac">Promise.all</code>, <code style="color:#86efac">Promise.allSettled</code>, <code style="color:#86efac">Promise.race</code>.',
+    code: `<span class="kw">const</span> <span class="fn">fetchUser</span> = (<span class="acc">id</span>) <span class="op">=></span>
+  <span class="kw">new</span> <span class="cls">Promise</span>((<span class="acc">resolve</span>, <span class="acc">reject</span>) <span class="op">=></span> {
+    <span class="fn">setTimeout</span>(() <span class="op">=></span> {
+      <span class="acc">id</span> > <span class="num">0</span>
+        ? <span class="acc">resolve</span>({ <span class="acc">id</span>, <span class="acc">name</span>: <span class="str">"Alice"</span> })
+        : <span class="acc">reject</span>(<span class="kw">new</span> <span class="cls">Error</span>(<span class="str">"Invalid ID"</span>));
+    }, <span class="num">300</span>);
+  });
+
+<span class="fn">fetchUser</span>(<span class="num">1</span>)
+  .<span class="fn">then</span>(<span class="acc">user</span> <span class="op">=></span> { <span class="fn">console</span>.<span class="fn">log</span>(<span class="acc">user</span>); <span class="kw">return</span> <span class="acc">user</span>.<span class="acc">id</span>; })
+  .<span class="fn">then</span>(<span class="acc">id</span> <span class="op">=></span> <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"ID:"</span>, <span class="acc">id</span>))
+  .<span class="fn">catch</span>(<span class="acc">err</span> <span class="op">=></span> <span class="fn">console</span>.<span class="fn">error</span>(<span class="acc">err</span>.<span class="acc">message</span>))
+  .<span class="fn">finally</span>(() <span class="op">=></span> <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Done"</span>));`,
+    tryCode: `const delay = (ms, val) => new Promise(r => setTimeout(() => r(val), ms));\n\n// Promise.all — parallel\nPromise.all([\n  delay(100, 'User data'),\n  delay(200, 'Posts data'),\n  delay(150, 'Comments')\n]).then(results => console.log('All:', results));\n\n// Promise.allSettled — even if some fail\nPromise.allSettled([\n  Promise.resolve('ok'),\n  Promise.reject('fail'),\n  delay(50, 'async ok')\n]).then(results => {\n  results.forEach(r => console.log(r.status, r.value || r.reason));\n});`
+  },
+  {
+    num: '08', tag: 'ES2017', tagType: 'cyan',
+    title: 'Async / Await',
+    desc: 'Write async code that reads like synchronous code. <code style="color:#67e8f9">async</code> functions always return a Promise. <code style="color:#67e8f9">await</code> pauses execution until the Promise resolves. Use <code>try/catch</code> for error handling.',
+    code: `<span class="kw">const</span> <span class="fn">delay</span> = (<span class="acc">ms</span>) <span class="op">=></span> <span class="kw">new</span> <span class="cls">Promise</span>(<span class="acc">r</span> <span class="op">=></span> <span class="fn">setTimeout</span>(<span class="acc">r</span>, <span class="acc">ms</span>));
+
+<span class="kw">async function</span> <span class="fn">fetchData</span>() {
+  <span class="kw">try</span> {
+    <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Fetching..."</span>);
+    <span class="kw">await</span> <span class="fn">delay</span>(<span class="num">500</span>);
+    <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Done!"</span>);
+    <span class="kw">return</span> { <span class="acc">data</span>: <span class="str">"result"</span> };
+  } <span class="kw">catch</span> (<span class="acc">err</span>) {
+    <span class="fn">console</span>.<span class="fn">error</span>(<span class="acc">err</span>);
+  }
+}
+
+<span class="cmt">// Parallel — much faster than sequential await</span>
+<span class="kw">async function</span> <span class="fn">parallel</span>() {
+  <span class="kw">const</span> [<span class="acc">a</span>, <span class="acc">b</span>] = <span class="kw">await</span> <span class="cls">Promise</span>.<span class="fn">all</span>([
+    <span class="fn">fetchUsers</span>(), <span class="fn">fetchPosts</span>()
+  ]);
+}`,
+    tryCode: `const sleep = ms => new Promise(r => setTimeout(r, ms));\n\nasync function pipeline() {\n  console.log('Step 1: Start');\n  await sleep(200);\n  console.log('Step 2: Processing...');\n  await sleep(200);\n  const result = await Promise.resolve({ status: 'ok', data: [1,2,3] });\n  console.log('Step 3: Result', result);\n  return result;\n}\n\npipeline().then(r => console.log('Pipeline finished:', r));`
+  },
+  {
+    num: '09', tag: 'ES2015', tagType: '',
+    title: 'Map & Set',
+    desc: '<code style="color:#c8f562">Map</code> stores key-value pairs where keys can be ANY type. <code style="color:#c8f562">Set</code> stores unique values only. Both are ordered and iterable — unlike plain objects.',
+    code: `<span class="cmt">// Map — any key type</span>
+<span class="kw">const</span> <span class="acc">map</span> = <span class="kw">new</span> <span class="cls">Map</span>();
+<span class="acc">map</span>.<span class="fn">set</span>(<span class="str">"name"</span>, <span class="str">"Alice"</span>);
+<span class="acc">map</span>.<span class="fn">set</span>(<span class="num">42</span>, <span class="str">"number key"</span>);
+<span class="acc">map</span>.<span class="fn">get</span>(<span class="str">"name"</span>);  <span class="cmt">// "Alice"</span>
+<span class="acc">map</span>.<span class="acc">size</span>;         <span class="cmt">// 2</span>
+
+<span class="kw">for</span> (<span class="kw">const</span> [<span class="acc">k</span>, <span class="acc">v</span>] <span class="kw">of</span> <span class="acc">map</span>) {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="acc">k</span>, <span class="str">"=>"</span>, <span class="acc">v</span>);
+}
+
+<span class="cmt">// Set — unique values</span>
+<span class="kw">const</span> <span class="acc">set</span> = <span class="kw">new</span> <span class="cls">Set</span>([<span class="num">1</span>,<span class="num">2</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">3</span>]);
+<span class="fn">console</span>.<span class="fn">log</span>([...<span class="acc">set</span>]); <span class="cmt">// [1,2,3]</span>
+
+<span class="cmt">// Set operations</span>
+<span class="kw">const</span> <span class="acc">union</span> = <span class="kw">new</span> <span class="cls">Set</span>([...<span class="acc">setA</span>, ...<span class="acc">setB</span>]);`,
+    tryCode: `// Map as frequency counter\nconst words = ['apple','banana','apple','cherry','banana','apple'];\nconst freq = new Map();\nwords.forEach(w => freq.set(w, (freq.get(w) || 0) + 1));\nconsole.log(freq);\n\n// Sort by frequency\nconst sorted = [...freq.entries()].sort((a,b) => b[1] - a[1]);\nconsole.log('Most common:', sorted);\n\n// Set operations\nconst a = new Set([1,2,3,4,5]);\nconst b = new Set([3,4,5,6,7]);\nconst intersection = new Set([...a].filter(x => b.has(x)));\nconst difference   = new Set([...a].filter(x => !b.has(x)));\nconsole.log('Intersection:', [...intersection]);\nconsole.log('Difference:', [...difference]);`
+  },
+  {
+    num: '10', tag: 'ES2015', tagType: '',
+    title: 'Generators & Iterators',
+    desc: 'Functions marked with <code style="color:#c8f562">function*</code> that can pause with <code style="color:#c8f562">yield</code> and resume. They produce values lazily on demand — perfect for infinite sequences.',
+    code: `<span class="kw">function</span>* <span class="fn">counter</span>(<span class="acc">start</span> = <span class="num">0</span>) {
+  <span class="kw">while</span> (<span class="kw">true</span>) <span class="kw">yield</span> <span class="acc">start</span>++;
+}
+
+<span class="kw">function</span>* <span class="fn">range</span>(<span class="acc">from</span>, <span class="acc">to</span>, <span class="acc">step</span> = <span class="num">1</span>) {
+  <span class="kw">for</span> (<span class="kw">let</span> <span class="acc">i</span> = <span class="acc">from</span>; <span class="acc">i</span> <= <span class="acc">to</span>; <span class="acc">i</span> += <span class="acc">step</span>) {
+    <span class="kw">yield</span> <span class="acc">i</span>;
+  }
+}
+
+<span class="fn">console</span>.<span class="fn">log</span>([...<span class="fn">range</span>(<span class="num">1</span>, <span class="num">10</span>, <span class="num">2</span>)]); <span class="cmt">// [1,3,5,7,9]</span>
+
+<span class="cmt">// Fibonacci generator</span>
+<span class="kw">function</span>* <span class="fn">fib</span>() {
+  <span class="kw">let</span> [<span class="acc">a</span>, <span class="acc">b</span>] = [<span class="num">0</span>, <span class="num">1</span>];
+  <span class="kw">while</span> (<span class="kw">true</span>) { <span class="kw">yield</span> <span class="acc">a</span>; [<span class="acc">a</span>, <span class="acc">b</span>] = [<span class="acc">b</span>, <span class="acc">a</span>+<span class="acc">b</span>]; }
+}`,
+    tryCode: `function* fibonacci() {\n  let [a, b] = [0, 1];\n  while (true) { yield a; [a, b] = [b, a + b]; }\n}\n\nfunction* range(from, to, step = 1) {\n  for (let i = from; i <= to; i += step) yield i;\n}\n\n// Take first N from any generator\nfunction take(gen, n) {\n  return Array.from({ length: n }, () => gen.next().value);\n}\n\nconsole.log('Fibonacci:', take(fibonacci(), 10));\nconsole.log('Odds:', [...range(1, 20, 2)]);\nconsole.log('Evens:', [...range(2, 20, 2)]);`
+  },
+  {
+    num: '11', tag: 'ES2020', tagType: 'amber',
+    title: 'Optional Chaining & Nullish Coalescing',
+    desc: '<code style="color:#fcd34d">?.</code> safely accesses nested properties — returns <code>undefined</code> instead of crashing. <code style="color:#fcd34d">??</code> returns right side only when left is <code>null</code> or <code>undefined</code> (unlike <code>||</code> which catches all falsy).',
+    code: `<span class="kw">const</span> <span class="acc">user</span> = {
+  <span class="acc">name</span>: <span class="str">"Alice"</span>,
+  <span class="acc">address</span>: { <span class="acc">city</span>: <span class="str">"NYC"</span> }
+};
+
+<span class="cmt">// Optional chaining</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="acc">user</span>?.<span class="acc">address</span>?.<span class="acc">city</span>);    <span class="cmt">// "NYC"</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="acc">user</span>?.<span class="acc">phone</span>?.<span class="acc">number</span>);  <span class="cmt">// undefined (no error)</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="acc">user</span>?.<span class="fn">greet</span>?.());      <span class="cmt">// undefined (not a func)</span>
+
+<span class="cmt">// Nullish ?? vs ||</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="num">0</span> || <span class="str">"default"</span>);   <span class="cmt">// "default" (0 is falsy)</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="num">0</span> ?? <span class="str">"default"</span>);   <span class="cmt">// 0 (not null/undefined)</span>
+
+<span class="cmt">// Logical assignment (ES2021)</span>
+<span class="kw">let</span> <span class="acc">x</span> = <span class="kw">null</span>;
+<span class="acc">x</span> ??= <span class="str">"value"</span>;  <span class="cmt">// x = "value"</span>`,
+    tryCode: `const config = {\n  server: { port: 0, host: null },\n  db: { name: 'mydb' }\n};\n\n// Optional chaining\nconsole.log(config?.server?.port);   // 0 (exists!)\nconsole.log(config?.cache?.ttl);     // undefined\nconsole.log(config?.server?.timeout?.value); // undefined\n\n// ?? vs ||\nconst port    = config?.server?.port    ?? 3000;  // 0 (not null)\nconst host    = config?.server?.host    ?? 'localhost';  // "localhost"\nconst missing = config?.server?.missing ?? 'default';\n\nconsole.log({ port, host, missing });\n\n// Logical assignment\nlet a = null, b = 0, c = 'hello';\na ??= 'set';   // null → assigned\nb ??= 'set';   // 0 → NOT assigned (0 is not null)\nc &&= c.toUpperCase(); // truthy → assigned\nconsole.log({ a, b, c });`
+  },
+  {
+    num: '12', tag: 'ES2015', tagType: '',
+    title: 'Proxy & Reflect',
+    desc: '<code style="color:#c8f562">Proxy</code> wraps an object and intercepts operations (get, set, delete…) via "traps". <code style="color:#c8f562">Reflect</code> provides default implementations. Powers Vue 3 reactivity, validation, and meta-programming.',
+    code: `<span class="cmt">// Validation proxy</span>
+<span class="kw">const</span> <span class="fn">typed</span> = (<span class="acc">obj</span>, <span class="acc">schema</span>) <span class="op">=></span>
+  <span class="kw">new</span> <span class="cls">Proxy</span>(<span class="acc">obj</span>, {
+    <span class="fn">set</span>(<span class="acc">t</span>, <span class="acc">k</span>, <span class="acc">v</span>) {
+      <span class="kw">if</span> (<span class="acc">schema</span>[<span class="acc">k</span>] && <span class="kw">typeof</span> <span class="acc">v</span> !== <span class="acc">schema</span>[<span class="acc">k</span>])
+        <span class="kw">throw</span> <span class="cls">TypeError</span>(<span class="str">\`\${<span class="acc">k</span>} must be \${<span class="acc">schema</span>[<span class="acc">k</span>]}\`</span>);
+      <span class="kw">return</span> <span class="cls">Reflect</span>.<span class="fn">set</span>(<span class="acc">t</span>, <span class="acc">k</span>, <span class="acc">v</span>);
+    }
+  });
+
+<span class="kw">const</span> <span class="acc">user</span> = <span class="fn">typed</span>({}, { <span class="acc">name</span>: <span class="str">"string"</span>, <span class="acc">age</span>: <span class="str">"number"</span> });
+<span class="acc">user</span>.<span class="acc">name</span> = <span class="str">"Alice"</span>;  <span class="cmt">// ✅</span>
+<span class="cmt">// user.age = "old"  → TypeError!</span>`,
+    tryCode: `// Observable proxy — track all changes\nfunction observe(target, onChange) {\n  return new Proxy(target, {\n    set(obj, key, value) {\n      const old = obj[key];\n      const result = Reflect.set(obj, key, value);\n      if (old !== value) onChange(key, old, value);\n      return result;\n    },\n    get(obj, key) {\n      const val = Reflect.get(obj, key);\n      return typeof val === 'object' && val !== null ? observe(val, onChange) : val;\n    }\n  });\n}\n\nconst state = observe({ count: 0, name: 'Alice' }, (k, oldV, newV) => {\n  console.log(\`[\${k}] changed: \${JSON.stringify(oldV)} → \${JSON.stringify(newV)}\`);\n});\n\nstate.count++;\nstate.count += 5;\nstate.name = 'Bob';\nconsole.log('Final state:', { count: state.count, name: state.name });`
+  }
+];
+
+// Build timeline
+function buildTopics() {
+  const container = document.getElementById('topicsTimeline');
+  topics.forEach((t, i) => {
+    const item = document.createElement('div');
+    item.className = 'timeline-item';
+    item.style.transitionDelay = `${i * 0.05}s`;
+    item.innerHTML = `
+      <div class="timeline-dot"></div>
+      <div class="timeline-meta">
+        <span class="timeline-tag ${t.tagType}">${t.tag}</span>
+        <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted)">${t.num}</span>
+      </div>
+      <div class="timeline-topic" onclick="toggleTopic(this.parentElement)">${t.title}</div>
+      <div class="timeline-desc">${t.desc}</div>
+      <button class="expand-btn" onclick="toggleTopic(this.parentElement)">
+        <span>Show Example</span> <span class="arrow">↓</span>
+      </button>
+      <div class="code-preview">
+        <div class="code-preview-header">
+          <span>JavaScript</span>
+          <button class="try-btn" onclick="tryInConsole(${i})">Try in Console →</button>
+        </div>
+        <pre>${t.code}</pre>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function toggleTopic(item) {
+  item.classList.toggle('expanded');
+  const btn = item.querySelector('.expand-btn span:first-child');
+  if (btn) btn.textContent = item.classList.contains('expanded') ? 'Hide Example' : 'Show Example';
+}
+
+function tryInConsole(idx) {
+  const code = topics[idx].tryCode;
+  document.getElementById('codeEditor').value = code;
+  updateLineNums();
+  document.getElementById('console-section').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => runCode(), 600);
+}
+
+buildTopics();
+
+// ══════════════════════════════════════════════
+// INTERSECTION OBSERVER
+// ══════════════════════════════════════════════
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+document.querySelectorAll('.timeline-item, .howto-card, .skill-group, .edu-card, .project-card').forEach(el => observer.observe(el));
+
+// ══════════════════════════════════════════════
+// LINE NUMBERS
+// ══════════════════════════════════════════════
+function updateLineNums() {
+  const lines = document.getElementById('codeEditor').value.split('\n').length;
+  const nums = Array.from({length: lines}, (_, i) => i + 1).join('\n');
+  document.getElementById('lineNums').textContent = nums;
+}
+updateLineNums();
+
+document.getElementById('codeEditor').addEventListener('scroll', function() {
+  document.getElementById('lineNums').scrollTop = this.scrollTop;
+});
+
+// ══════════════════════════════════════════════
+// CHROME-STYLE OUTPUT ENGINE
+// ══════════════════════════════════════════════
+function createOutputLine(content, type = 'log') {
+  const panel = document.getElementById('outputPanel');
+  const line = document.createElement('div');
+  line.className = `output-line out-${type}`;
+
+  const gutter = document.createElement('span');
+  gutter.className = 'output-gutter';
+  gutter.textContent = type === 'error' ? '✕' : type === 'warn' ? '⚠' : type === 'info' ? 'ℹ' : type === 'return' ? '←' : type === 'cmd' ? '>' : ' ';
+
+  const contentEl = document.createElement('span');
+  contentEl.className = 'output-content';
+
+  if (typeof content === 'object' && content !== null && content._isRenderable) {
+    contentEl.appendChild(content.node);
+  } else {
+    contentEl.textContent = content;
+  }
+
+  line.appendChild(gutter);
+  line.appendChild(contentEl);
+  panel.appendChild(line);
+  panel.scrollTop = panel.scrollHeight;
+}
+
+// ── Rich value formatter (Chrome-style) ──
+function formatValue(val, depth = 0, inline = false) {
+  if (val === null) return span('obj-null', 'null');
+  if (val === undefined) return span('obj-null', 'undefined');
+  if (typeof val === 'boolean') return span('obj-bool', String(val));
+  if (typeof val === 'number') return span('obj-number', isNaN(val) ? 'NaN' : String(val));
+  if (typeof val === 'string') {
+    if (inline) return span('obj-string', `"${val}"`);
+    return span('obj-string', `"${val}"`);
+  }
+  if (typeof val === 'function') {
+    const name = val.name || 'anonymous';
+    return span('obj-func', `ƒ ${name}()`);
+  }
+  if (typeof val === 'symbol') return span('obj-func', val.toString());
+  if (typeof val === 'bigint') return span('obj-number', `${val}n`);
+
+  if (val instanceof Error) {
+    const s = document.createElement('span');
+    s.style.color = '#fca5a5';
+    s.textContent = `${val.constructor.name}: ${val.message}`;
+    return s;
+  }
+
+  // Array
+  if (Array.isArray(val)) {
+    if (depth > 2 || (inline && val.length > 4)) {
+      const s = document.createElement('span');
+      s.style.color = 'var(--text-dim)';
+      s.textContent = `Array(${val.length})`;
+      return s;
+    }
+    return buildTree(val, true, depth);
+  }
+
+  // Map
+  if (val instanceof Map) {
+    const s = document.createElement('span');
+    s.style.color = 'var(--accent2)';
+    s.textContent = `Map(${val.size})`;
+    return s;
+  }
+
+  // Set
+  if (val instanceof Set) {
+    const s = document.createElement('span');
+    s.style.color = 'var(--accent2)';
+    s.textContent = `Set(${val.size})`;
+    return s;
+  }
+
+  // Object
+  if (typeof val === 'object') {
+    if (depth > 2) {
+      const s = document.createElement('span');
+      s.style.color = 'var(--text-dim)';
+      s.textContent = '{…}';
+      return s;
+    }
+    return buildTree(val, false, depth);
+  }
+
+  const s = document.createElement('span');
+  s.textContent = String(val);
+  return s;
+}
+
+function span(cls, text) {
+  const s = document.createElement('span');
+  s.className = cls;
+  s.textContent = text;
+  return s;
+}
+
+function buildTree(val, isArray, depth) {
+  const isArr = isArray;
+  const keys = isArr ? [...val.keys()] : Object.keys(val);
+  const bracket = isArr ? ['[', ']'] : ['{', '}'];
+
+  // Inline preview
+  const preview = document.createElement('span');
+  const previewItems = keys.slice(0, isArr ? 5 : 3).map(k => {
+    const item = document.createElement('span');
+    if (!isArr) {
+      const keyEl = span('obj-key', `${k}`);
+      const colon = span('obj-colon', ': ');
+      item.appendChild(keyEl);
+      item.appendChild(colon);
+    }
+    item.appendChild(formatValue(val[k], depth + 1, true));
+    return item;
+  });
+
+  const toggle = document.createElement('button');
+  toggle.className = 'obj-toggle';
+
+  function renderPreview() {
+    toggle.innerHTML = '';
+    const open = document.createTextNode(bracket[0]);
+    toggle.appendChild(open);
+    previewItems.forEach((item, i) => {
+      toggle.appendChild(item.cloneNode(true));
+      if (i < previewItems.length - 1) toggle.appendChild(document.createTextNode(', '));
+    });
+    if (keys.length > previewItems.length) toggle.appendChild(document.createTextNode(', …'));
+    toggle.appendChild(document.createTextNode(bracket[1]));
+    if (isArr) {
+      const len = document.createElement('span');
+      len.style.cssText = 'color:var(--muted);font-size:0.7rem;margin-left:4px;';
+      len.textContent = ` (${keys.length})`;
+      toggle.appendChild(len);
+    }
+  }
+  renderPreview();
+
+  // Expanded children
+  const children = document.createElement('div');
+  children.className = 'obj-children';
+
+  function buildChildren() {
+    children.innerHTML = '';
+    keys.forEach(k => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:4px;align-items:flex-start;padding:1px 0;';
+      const keyEl = document.createElement('span');
+      keyEl.className = 'obj-key';
+      keyEl.textContent = isArr ? `${k}: ` : `${k}: `;
+      row.appendChild(keyEl);
+      row.appendChild(formatValue(val[k], depth + 1, false));
+      children.appendChild(row);
+    });
+    // prototype
+    const proto = document.createElement('div');
+    proto.className = 'obj-proto';
+    proto.textContent = `[[Prototype]]: ${isArr ? 'Array' : 'Object'}`;
+    children.appendChild(proto);
+  }
+
+  let expanded = false;
+  toggle.addEventListener('click', () => {
+    expanded = !expanded;
+    children.classList.toggle('open', expanded);
+    if (expanded && children.children.length === 0) buildChildren();
+    toggle.innerHTML = '';
+    if (expanded) {
+      toggle.appendChild(document.createTextNode(bracket[0]));
+    } else {
+      renderPreview();
+    }
+  });
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'obj-tree';
+  wrapper.appendChild(toggle);
+  wrapper.appendChild(children);
+  return wrapper;
+}
+
+function renderOutput(vals, type) {
+  const panel = document.getElementById('outputPanel');
+  const line = document.createElement('div');
+  line.className = `output-line out-${type}`;
+
+  const gutter = document.createElement('span');
+  gutter.className = 'output-gutter';
+  gutter.textContent = type === 'error' ? '✕' : type === 'warn' ? '⚠' : ' ';
+
+  const contentEl = document.createElement('span');
+  contentEl.className = 'output-content';
+  contentEl.style.display = 'flex';
+  contentEl.style.flexWrap = 'wrap';
+  contentEl.style.gap = '6px';
+  contentEl.style.alignItems = 'flex-start';
+
+  vals.forEach(v => {
+    contentEl.appendChild(formatValue(v, 0, false));
+  });
+
+  line.appendChild(gutter);
+  line.appendChild(contentEl);
+  panel.appendChild(line);
+  panel.scrollTop = panel.scrollHeight;
+}
+
+// ══════════════════════════════════════════════
+// RUN CODE
+// ══════════════════════════════════════════════
+let replHistory = [], replHistIdx = -1;
+
+function runCode() {
+  const code = document.getElementById('codeEditor').value;
+  if (!code.trim()) return;
+
+  clearOutput();
+  createOutputLine('> Running…', 'cmd');
+
+  const origLog   = console.log;
+  const origWarn  = console.warn;
+  const origError = console.error;
+  const origInfo  = console.info;
+
+  console.log = (...args) => { origLog(...args); renderOutput(args, 'log'); };
+  console.warn = (...args) => { origWarn(...args); renderOutput(args, 'warn'); };
+  console.error = (...args) => { origError(...args); renderOutput(args, 'error'); };
+  console.info = (...args) => { origInfo(...args); renderOutput(args, 'info'); };
+
+  try {
+    const result = eval(code);
+    if (result !== undefined) renderOutput([result], 'return');
+  } catch (err) {
+    renderOutput([err], 'error');
+  } finally {
+    console.log   = origLog;
+    console.warn  = origWarn;
+    console.error = origError;
+    console.info  = origInfo;
+  }
+}
+
+function clearOutput() {
+  document.getElementById('outputPanel').innerHTML = '';
+}
+
+function handleEditorKey(e) {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); runCode(); return; }
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const t = e.target, s = t.selectionStart, end = t.selectionEnd;
+    t.value = t.value.substring(0, s) + '  ' + t.value.substring(end);
+    t.selectionStart = t.selectionEnd = s + 2;
+    updateLineNums();
+  }
+}
+
+// ── REPL ──
+function handleReplKey(e) {
+  const input = document.getElementById('replInput');
+  if (e.key === 'Enter') {
+    const code = input.value.trim();
+    if (!code) return;
+    replHistory.unshift(code);
+    replHistIdx = -1;
+    createOutputLine('> ' + code, 'cmd');
+
+    const origLog = console.log, origWarn = console.warn, origError = console.error;
+    console.log = (...args) => { origLog(...args); renderOutput(args, 'log'); };
+    console.warn = (...args) => { origWarn(...args); renderOutput(args, 'warn'); };
+    console.error = (...args) => { origError(...args); renderOutput(args, 'error'); };
+
+    try {
+      const result = eval(code);
+      renderOutput([result], 'return');
+    } catch (err) {
+      renderOutput([err], 'error');
+    } finally {
+      console.log = origLog; console.warn = origWarn; console.error = origError;
+    }
+    input.value = '';
+  }
+  if (e.key === 'ArrowUp') { e.preventDefault(); replHistIdx = Math.min(replHistIdx + 1, replHistory.length - 1); if (replHistory[replHistIdx]) input.value = replHistory[replHistIdx]; }
+  if (e.key === 'ArrowDown') { e.preventDefault(); replHistIdx = Math.max(replHistIdx - 1, -1); input.value = replHistIdx >= 0 ? replHistory[replHistIdx] : ''; }
+}
+
+// ── SNIPPET LOADER ──
+const snippets = {
+  arrow:    `// Arrow Functions\nconst add = (a, b) => a + b;\nconst double = x => x * 2;\nconst makeUser = name => ({ name, id: Math.random() });\n\nconsole.log(add(3, 7));\nconsole.log(double(21));\nconsole.log(makeUser('Alice'));\n\nconst nums = [1,2,3,4,5];\nconsole.log('evens:', nums.filter(n => n % 2 === 0));\nconsole.log('sum:', nums.reduce((a, b) => a + b, 0));`,
+  destruct: `// Destructuring\nconst user = { name: 'Alice', age: 30, role: 'dev', skills: ['JS','PHP'] };\nconst { name, age, skills: [mainSkill, ...rest] } = user;\nconsole.log(name, age, mainSkill, rest);\n\nconst matrix = [[1,2,3],[4,5,6],[7,8,9]];\nconst [[a,b,c], [d,e,f]] = matrix;\nconsole.log(a, e, f);\n\n// Function param destructuring\nconst greet = ({ name, role = 'user' }) => \`\${name} (\${role})\`;\nconsole.log(greet(user));`,
+  spread:   `// Rest & Spread\nfunction sum(...nums) { return nums.reduce((a, b) => a + b, 0); }\nconsole.log('sum:', sum(1,2,3,4,5));\n\nconst a = [1,2,3], b = [4,5,6];\nconsole.log('merged:', [...a, ...b]);\nconsole.log('max:', Math.max(...a, ...b));\n\nconst defaults = { theme: 'dark', lang: 'en', debug: false };\nconst config = { ...defaults, lang: 'fr', version: '2.0' };\nconsole.log(config);`,
+  class:    `class Vehicle {\n  #mileage = 0;\n  constructor(make, model) { this.make = make; this.model = model; }\n  drive(km) { this.#mileage += km; return this; }\n  get info() { return \`\${this.make} \${this.model} — \${this.#mileage}km\`; }\n  static compare(a, b) { return a.#mileage - b.#mileage; }\n}\n\nclass ElectricCar extends Vehicle {\n  constructor(make, model, range) { super(make, model); this.range = range; }\n  get info() { return super.info + \` (EV, range: \${this.range}km)\`; }\n}\n\nconst car1 = new ElectricCar('Tesla', 'Model 3', 570).drive(120).drive(80);\nconst car2 = new Vehicle('Toyota', 'Corolla').drive(300);\nconsole.log(car1.info);\nconsole.log(car2.info);`,
+  promise:  `const delay = (ms, val) => new Promise(r => setTimeout(() => r(val), ms));\nconst fail  = (ms, err) => new Promise((_, r) => setTimeout(() => r(new Error(err)), ms));\n\n// Promise.all\nPromise.all([delay(100,'Users'), delay(200,'Posts'), delay(150,'Tags')])\n  .then(([users, posts, tags]) => console.log({ users, posts, tags }));\n\n// Promise.allSettled — handles failures gracefully\nPromise.allSettled([delay(100,'ok'), fail(50,'oops'), delay(200,'also ok')])\n  .then(results => results.forEach(r => console.log(r.status, r.value ?? r.reason?.message)));`,
+  async:    `const sleep = ms => new Promise(r => setTimeout(r, ms));\nconst fetchMock = (url) => sleep(100).then(() => ({ url, data: Math.random().toFixed(4) }));\n\nasync function pipeline() {\n  console.log('[1] Starting pipeline...');\n  await sleep(100);\n  \n  // Parallel fetches\n  const [a, b] = await Promise.all([fetchMock('/users'), fetchMock('/posts')]);\n  console.log('[2] Fetched:', a, b);\n  \n  // Sequential processing\n  const processed = await Promise.resolve([a.data, b.data].map(Number));\n  console.log('[3] Processed:', processed);\n  \n  return { status: 'done', results: processed };\n}\n\npipeline().then(r => console.log('[4] Final:', r));`,
+  map:      `// Map & Set\nconst inventory = new Map([\n  ['apple', { price: 1.2, qty: 50 }],\n  ['banana', { price: 0.5, qty: 120 }],\n  ['cherry', { price: 3.0, qty: 30 }]\n]);\n\nconsole.log(inventory.get('apple'));\nconsole.log('Total items:', [...inventory.values()].reduce((s,v) => s + v.qty, 0));\n\n// Set for unique tracking\nconst visited = new Set();\n['home', 'about', 'home', 'contact', 'about', 'blog'].forEach(p => visited.add(p));\nconsole.log('Unique pages:', [...visited]);\nconsole.log('Visits:', 6, '→ Unique:', visited.size);`,
+  generator:`function* fibonacci() {\n  let [a, b] = [0, 1];\n  while (true) { yield a; [a, b] = [b, a + b]; }\n}\n\nfunction* range(from, to, step = 1) {\n  for (let i = from; i <= to; i += step) yield i;\n}\n\nfunction* map(iter, fn) {\n  for (const val of iter) yield fn(val);\n}\n\nfunction take(gen, n) {\n  return [...Array(n)].map(() => gen.next().value);\n}\n\nconsole.log('fib(12):', take(fibonacci(), 12));\nconsole.log('squares:', [...map(range(1, 8), x => x*x)]);`,
+  proxy:    `function reactive(data, onChange) {\n  return new Proxy(data, {\n    set(t, k, v) {\n      const old = t[k];\n      const r = Reflect.set(t, k, v);\n      if (old !== v) onChange({ key: k, from: old, to: v });\n      return r;\n    }\n  });\n}\n\nconst state = reactive({ user: 'Alice', score: 0, level: 1 }, change => {\n  console.log(\`🔄 \${change.key}: \${JSON.stringify(change.from)} → \${JSON.stringify(change.to)}\`);\n});\n\nstate.score += 100;\nstate.score += 250;\nstate.level = 2;\nstate.user = 'Bob';\nconsole.log('Final state:', { user: state.user, score: state.score, level: state.level });`,
+  optional: `const data = {\n  users: [\n    { id: 1, name: 'Alice', profile: { bio: 'Dev', social: { twitter: '@alice' } } },\n    { id: 2, name: 'Bob' }\n  ]\n};\n\ndata.users.forEach(u => {\n  const twitter = u?.profile?.social?.twitter ?? 'No Twitter';\n  const bio     = u?.profile?.bio ?? 'No bio';\n  console.log(\`\${u.name}: \${bio} | \${twitter}\`);\n});\n\n// Nullish assignment\nconst settings = { fontSize: 0, theme: null, lang: '' };\nsettings.fontSize ??= 14;   // 0 stays! (not null/undefined)\nsettings.theme    ??= 'dark'; // null → assigned\nsettings.lang     ??= 'en';   // '' stays! (not null/undefined)\nconsole.log(settings);`
+};
+
+function loadSnippet(key) {
+  if (!key) return;
+  document.getElementById('codeEditor').value = snippets[key] || '';
+  updateLineNums();
+  document.getElementById('snippetSelect').value = '';
+}
+
+// Quick snippet chips
+const quickChips = [
+  { label: '→ Arrow', code: `const add = (a,b) => a+b;\nconsole.log(add(3,7));` },
+  { label: '⊕ Destruct', code: `const {name,...rest} = {name:'Alice',age:30,city:'NYC'};\nconsole.log(name); console.log(rest);` },
+  { label: '∞ Gen', code: `function* range(a,b){for(let i=a;i<=b;i++)yield i;}\nconsole.log([...range(1,10)]);` },
+  { label: '⟳ Async', code: `(async()=>{\n  await new Promise(r=>setTimeout(r,100));\n  console.log('done!');\n})();` },
+  { label: '📦 Map', code: `const m=new Map([['a',1],['b',2]]);\nfor(const[k,v]of m)console.log(k,v);` },
+  { label: '✓ Class', code: `class Dog{speak(){return 'Woof!'}}\nconsole.log(new Dog().speak());` },
+  { label: '? Chain', code: `const u={a:{b:{c:42}}};\nconsole.log(u?.a?.b?.c);\nconsole.log(u?.x?.y??'default');` },
+];
+
+const snippetRow = document.getElementById('quickSnippets');
+quickChips.forEach(chip => {
+  const btn = document.createElement('button');
+  btn.className = 'snippet-chip';
+  btn.textContent = chip.label;
+  btn.onclick = () => {
+    document.getElementById('codeEditor').value = chip.code;
+    updateLineNums();
+  };
+  snippetRow.appendChild(btn);
+});
+
+// ══════════════════════════════════════════════
+// KEYBOARD SHORTCUT
+// ══════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (document.activeElement === document.getElementById('codeEditor')) runCode();
+  }
+});
+</script>
+</body>
+</html>
