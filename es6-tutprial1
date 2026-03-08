@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Modern JS Mastery — ES6 to ES2023</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0b0c0e;--surface:#111316;--surface2:#161820;--border:#1e2128;
+  --accent:#c8f562;--accent2:#62d4f5;--accent3:#f5a623;--red:#f87171;
+  --muted:#4a4f5c;--text:#e8eaf0;--text-dim:#7a8090;
+  --font-d:'Syne',sans-serif;--font-m:'DM Mono',monospace;--font-s:'Fraunces',serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-d);overflow-x:hidden;cursor:none}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--muted);border-radius:3px}
+
+/* CURSOR */
+#cursor{position:fixed;width:12px;height:12px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transition:transform .15s ease;mix-blend-mode:difference}
+#cursor-ring{position:fixed;width:36px;height:36px;border:1px solid rgba(200,245,98,0.4);border-radius:50%;pointer-events:none;z-index:9998;transition:transform .4s cubic-bezier(.23,1,.32,1),width .3s,height .3s}
+
+/* NOISE */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:100;opacity:.4}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 2.5rem;backdrop-filter:blur(20px);background:rgba(11,12,14,.8);border-bottom:1px solid transparent;transition:border-color .4s}
+nav.scrolled{border-color:var(--border)}
+.nav-logo{font-family:var(--font-m);font-size:.78rem;color:var(--accent);letter-spacing:.1em;display:flex;align-items:center;gap:.6rem}
+.nav-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,245,98,.4)}50%{box-shadow:0 0 0 6px rgba(200,245,98,0)}}
+.nav-links{display:flex;gap:1.5rem;list-style:none}
+.nav-links a{font-family:var(--font-m);font-size:.68rem;color:var(--text-dim);text-decoration:none;letter-spacing:.1em;text-transform:uppercase;transition:color .2s;cursor:none}
+.nav-links a:hover{color:var(--accent)}
+.nav-badge{font-family:var(--font-m);font-size:.65rem;background:rgba(200,245,98,.08);color:var(--accent);border:1px solid rgba(200,245,98,.2);padding:.3rem .9rem;border-radius:2px;letter-spacing:.1em}
+
+/* HERO */
+#hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:0 2.5rem;gap:4rem;position:relative;overflow:hidden}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:.35}
+.hero-grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 30% 50%,transparent 30%,var(--bg) 80%)}
+.hero-left{position:relative;z-index:2}
+.hero-tag{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-m);font-size:.68rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;border:1px solid rgba(200,245,98,.25);padding:.35rem .9rem;border-radius:2px;margin-bottom:1.8rem;opacity:0;animation:fadeUp .8s .2s forwards}
+.hero-tag::before{content:'';width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+.hero-name{font-size:clamp(3rem,5.5vw,5.5rem);font-weight:800;line-height:.95;letter-spacing:-.03em;opacity:0;animation:fadeUp .9s .4s forwards}
+.hero-name span{display:block;font-family:var(--font-s);font-style:italic;font-weight:300;color:var(--text-dim);font-size:clamp(1.6rem,2.8vw,2.8rem);margin-top:.3rem}
+.hero-role{margin-top:1.8rem;font-family:var(--font-m);font-size:.83rem;color:var(--text-dim);line-height:1.9;max-width:440px;opacity:0;animation:fadeUp .9s .6s forwards}
+.hero-role em{color:var(--accent2);font-style:normal}
+.hero-cta{display:flex;gap:1rem;margin-top:2.5rem;flex-wrap:wrap;opacity:0;animation:fadeUp .9s .8s forwards}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.6rem;font-family:var(--font-m);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border-radius:3px;transition:all .25s;cursor:none;border:none;font-weight:600}
+.btn-primary{background:var(--accent);color:#0b0c0e}
+.btn-primary:hover{background:#d8ff70;transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,245,98,.25)}
+.btn-outline{border:1px solid var(--border);color:var(--text-dim);background:transparent}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.hero-right{position:relative;z-index:2;display:flex;flex-direction:column;gap:.9rem;opacity:0;animation:fadeLeft 1s .5s forwards}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.5rem;display:flex;align-items:center;gap:1.2rem;transition:border-color .3s,transform .3s;cursor:none}
+.stat-card:hover{border-color:var(--accent);transform:translateX(-6px)}
+.stat-num{font-size:1.9rem;font-weight:800;color:var(--accent);line-height:1;min-width:52px}
+.stat-label{font-family:var(--font-m);font-size:.68rem;color:var(--text-dim);line-height:1.6}
+.stat-label strong{display:block;color:var(--text);font-size:.82rem}
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;font-family:var(--font-m);font-size:.62rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;opacity:0;animation:fadeUp 1s 1.2s forwards}
+.scroll-line{width:1px;height:50px;background:linear-gradient(to bottom,var(--muted),transparent);animation:scrollDown 2s infinite}
+@keyframes scrollDown{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+
+/* LAYOUT */
+.page-layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:260px;background:var(--surface);border-right:1px solid var(--border);position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;padding:1.2rem 0}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border)}
+.sb-section{padding:.6rem 1rem .3rem;font-family:var(--font-m);font-size:.6rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:.8rem}
+.sb-item{display:flex;align-items:center;gap:.7rem;padding:.55rem 1rem;margin:1px .5rem;border-radius:5px;cursor:pointer;font-family:var(--font-m);font-size:.72rem;color:var(--text-dim);transition:all .2s;text-decoration:none}
+.sb-item:hover{background:var(--surface2);color:var(--text)}
+.sb-item.active{background:rgba(200,245,98,.08);color:var(--accent);border-left:2px solid var(--accent)}
+.sb-num{font-size:.6rem;color:var(--accent);min-width:22px;opacity:.7}
+.sb-badge{font-size:.55rem;padding:.15rem .4rem;border-radius:2px;margin-left:auto}
+.badge-es6{background:rgba(200,245,98,.1);color:var(--accent);border:1px solid rgba(200,245,98,.2)}
+.badge-es7{background:rgba(98,212,245,.1);color:var(--accent2);border:1px solid rgba(98,212,245,.2)}
+.badge-new{background:rgba(245,166,35,.1);color:var(--accent3);border:1px solid rgba(245,166,35,.2)}
+
+/* MAIN CONTENT */
+.main-content{flex:1;overflow:hidden}
+
+/* TOPIC CARD */
+.topic-card{padding:3rem 3rem 2rem;border-bottom:1px solid var(--border);opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s}
+.topic-card.visible{opacity:1;transform:translateY(0)}
+.topic-header{display:flex;align-items:flex-start;gap:1.2rem;margin-bottom:1.2rem}
+.topic-num-badge{font-family:var(--font-m);font-size:.65rem;color:var(--accent);background:rgba(200,245,98,.08);border:1px solid rgba(200,245,98,.2);padding:.35rem .8rem;border-radius:3px;white-space:nowrap;margin-top:.4rem;letter-spacing:.08em}
+.topic-title{font-size:1.9rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.topic-subtitle{font-family:var(--font-m);font-size:.78rem;color:var(--text-dim);line-height:1.8;margin-top:.5rem;max-width:680px}
+.topic-tags{display:flex;gap:.4rem;margin-top:.7rem;flex-wrap:wrap}
+.t-tag{font-family:var(--font-m);font-size:.6rem;padding:.2rem .6rem;border-radius:2px;letter-spacing:.06em;font-weight:600}
+.t-es6{background:rgba(200,245,98,.1);color:var(--accent);border:1px solid rgba(200,245,98,.2)}
+.t-es7{background:rgba(98,212,245,.1);color:var(--accent2);border:1px solid rgba(98,212,245,.2)}
+.t-new{background:rgba(245,166,35,.1);color:var(--accent3);border:1px solid rgba(245,166,35,.2)}
+.t-es2020{background:rgba(248,113,113,.1);color:#fca5a5;border:1px solid rgba(248,113,113,.2)}
+
+/* EXPLAIN BOX */
+.explain-box{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:1.2rem 1.5rem;margin-bottom:1.5rem}
+.explain-box h4{font-family:var(--font-m);font-size:.65rem;color:var(--accent2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.8rem}
+.explain-box p{font-family:var(--font-m);font-size:.8rem;color:var(--text-dim);line-height:1.9}
+.explain-box ul{list-style:none;margin-top:.7rem}
+.explain-box li{font-family:var(--font-m);font-size:.76rem;color:var(--text-dim);padding:.25rem 0 .25rem 1.3rem;position:relative;line-height:1.7}
+.explain-box li::before{content:'→';position:absolute;left:0;color:var(--accent)}
+.explain-box code{color:var(--accent);font-family:var(--font-m)}
+
+/* MINI CONSOLE */
+.mini-console{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.mc-titlebar{display:flex;align-items:center;gap:.8rem;padding:.6rem 1rem;background:#0d0e13;border-bottom:1px solid var(--border)}
+.mc-dots{display:flex;gap:5px}
+.mc-dot{width:11px;height:11px;border-radius:50%}
+.mc-dot.r{background:#ff5f57}.mc-dot.y{background:#ffbd2e}.mc-dot.g{background:#28c840}
+.mc-tabs{display:flex;gap:.4rem;margin-left:.4rem}
+.mc-tab{font-family:var(--font-m);font-size:.62rem;color:var(--text-dim);padding:.25rem .8rem;border-radius:3px 3px 0 0;cursor:pointer;border:1px solid transparent;border-bottom:none}
+.mc-tab.active{background:#0a0b0f;color:var(--text);border-color:var(--border)}
+.mc-actions{margin-left:auto;display:flex;gap:.4rem;align-items:center}
+.mc-run{font-family:var(--font-m);font-size:.62rem;font-weight:700;background:var(--accent);color:#0b0c0e;border:none;padding:.3rem 1rem;border-radius:2px;cursor:pointer;transition:all .2s}
+.mc-run:hover{background:#d8ff70}
+.mc-reset{font-family:var(--font-m);font-size:.62rem;background:transparent;color:var(--text-dim);border:1px solid var(--border);padding:.3rem .7rem;border-radius:2px;cursor:pointer;transition:all .2s}
+.mc-reset:hover{color:var(--accent2);border-color:var(--accent2)}
+.mc-clear{font-family:var(--font-m);font-size:.62rem;background:transparent;color:var(--muted);border:1px solid var(--border);padding:.3rem .6rem;border-radius:2px;cursor:pointer;transition:all .2s}
+.mc-clear:hover{color:var(--red);border-color:var(--red)}
+
+.mc-body{display:grid;grid-template-columns:1fr 1fr}
+.mc-editor-pane{border-right:1px solid var(--border);display:flex;flex-direction:column}
+.mc-output-pane{display:flex;flex-direction:column;background:#090a0e}
+
+.mc-pane-label{font-family:var(--font-m);font-size:.6rem;color:var(--muted);letter-spacing:.1em;padding:.35rem .8rem;background:var(--surface2);border-bottom:1px solid var(--border);text-transform:uppercase;display:flex;align-items:center;gap:.5rem}
+.mc-pane-label span{margin-left:auto;color:var(--accent);font-size:.58rem}
+
+.mc-editor-wrap{display:flex;flex:1;min-height:0}
+.mc-linenums{padding:.6rem .5rem;background:#0a0b0f;border-right:1px solid var(--border);font-family:var(--font-m);font-size:.75rem;line-height:1.55rem;color:var(--muted);text-align:right;min-width:32px;user-select:none;overflow:hidden}
+.mc-textarea{flex:1;padding:.6rem .8rem;border:none;outline:none;background:#0a0b0f;color:var(--text);font-family:var(--font-m);font-size:.75rem;line-height:1.55rem;resize:none;tab-size:2;caret-color:var(--accent);overflow-y:auto;white-space:pre;word-break:normal;overflow-wrap:normal}
+
+.mc-output{flex:1;overflow-y:auto;padding:.3rem 0;min-height:160px;max-height:260px}
+.mc-line{display:flex;align-items:flex-start;gap:.5rem;padding:.1rem .8rem;border-bottom:1px solid rgba(255,255,255,.015)}
+.mc-line:hover{background:rgba(255,255,255,.02)}
+.mc-gutter{font-family:var(--font-m);font-size:.65rem;min-width:14px;flex-shrink:0;padding-top:.1rem}
+.mc-content{font-family:var(--font-m);font-size:.74rem;line-height:1.6;flex:1;word-break:break-all;white-space:pre-wrap}
+.mc-line.t-log .mc-gutter{color:var(--muted)}.mc-line.t-log .mc-content{color:var(--text)}
+.mc-line.t-error .mc-gutter{color:var(--red)}.mc-line.t-error .mc-content{color:#fca5a5}
+.mc-line.t-warn .mc-gutter{color:var(--accent3)}.mc-line.t-warn .mc-content{color:#fcd34d}
+.mc-line.t-info .mc-gutter{color:var(--accent2)}.mc-line.t-info .mc-content{color:var(--accent2)}
+.mc-line.t-ret .mc-gutter{color:var(--accent)}.mc-line.t-ret .mc-content{color:var(--accent)}
+.mc-line.t-cmd .mc-gutter{color:#a78bfa}.mc-line.t-cmd .mc-content{color:#c4b5fd}
+
+.mc-repl{display:flex;align-items:center;gap:.5rem;padding:.4rem .8rem;border-top:1px solid var(--border);background:var(--surface2)}
+.mc-repl-prompt{font-family:var(--font-m);font-size:.8rem;color:var(--accent);flex-shrink:0}
+.mc-repl-input{flex:1;background:transparent;border:none;outline:none;font-family:var(--font-m);font-size:.74rem;color:var(--text);caret-color:var(--accent)}
+
+/* OBJ TREE */
+.obj-tree{}
+.obj-toggle{cursor:pointer;color:var(--accent2);background:none;border:none;font-family:var(--font-m);font-size:.74rem;padding:0;transition:color .2s;text-align:left}
+.obj-toggle:hover{color:var(--accent)}
+.obj-children{padding-left:1.2rem;border-left:1px solid rgba(255,255,255,.06);margin-left:.2rem;display:none}
+.obj-children.open{display:block}
+.ok{color:#f9a8d4}.oc{color:var(--muted)}.os{color:#86efac}.on{color:#fbbf24}.ob{color:#d4a4f5}.ou{color:var(--muted);font-style:italic}.of{color:var(--accent2);font-style:italic}.op2{color:var(--muted);font-size:.68rem}
+
+/* SECTION wrapper */
+.sec-wrap{padding:2.5rem 3rem 1rem;border-bottom:1px solid var(--border)}
+.sec-title{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.3rem}
+.sec-sub{font-family:var(--font-m);font-size:.75rem;color:var(--text-dim);line-height:1.7;margin-bottom:1.5rem}
+
+/* CHEATSHEET */
+.cheat-table{width:100%;border-collapse:collapse;font-family:var(--font-m);font-size:.75rem;margin-bottom:1.5rem}
+.cheat-table th{background:var(--surface2);padding:.6rem 1rem;text-align:left;font-size:.6rem;letter-spacing:.1em;color:var(--text-dim);border:1px solid var(--border);text-transform:uppercase}
+.cheat-table td{padding:.6rem 1rem;border:1px solid var(--border);color:var(--text-dim);line-height:1.6}
+.cheat-table tr:hover td{background:rgba(255,255,255,.012)}
+.td-g{color:var(--accent)!important}.td-b{color:#f87171!important}.td-c{color:var(--accent2)!important;font-style:italic}
+
+/* PARTICLES */
+.particle{position:fixed;width:3px;height:3px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:1;opacity:0;animation:floatUp var(--dur,8s) var(--delay,0s) infinite linear}
+@keyframes floatUp{0%{transform:translateY(100vh) translateX(0);opacity:0}10%{opacity:.3}90%{opacity:.1}100%{transform:translateY(-20vh) translateX(var(--drift,30px));opacity:0}}
+
+@media(max-width:1024px){.page-layout{grid-template-columns:1fr}.sidebar{display:none}.mc-body{grid-template-columns:1fr}}
+@media(max-width:900px){nav{padding:1rem 1.2rem}.nav-links{display:none}#hero{grid-template-columns:1fr;padding:5rem 1.2rem 3rem}.hero-right{display:none}.topic-card,.sec-wrap{padding:2rem 1.2rem 1rem}}
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="particles"></div>
+
+<nav id="navbar">
+  <div class="nav-logo"><div class="nav-dot"></div>JS.MASTERY</div>
+  <ul class="nav-links">
+    <li><a href="#hero">Home</a></li>
+    <li><a href="#topics-area">Topics</a></li>
+    <li><a href="#cheatsheet">Cheatsheet</a></li>
+  </ul>
+  <div class="nav-badge">ES6 → ES2023</div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-left">
+    <div class="hero-tag">Interactive JavaScript Learning</div>
+    <h1 class="hero-name">Modern JS<br/>Mastery<span>ES6 through ES2023</span></h1>
+    <p class="hero-role">Every concept from <em>ES2015 to ES2023</em> — with a live editable console in every topic.<br/>Read, edit, run, and learn. <em>No setup. Just code.</em></p>
+    <div class="hero-cta">
+      <a href="#topics-area" class="btn btn-primary">Start Learning ↓</a>
+      <a href="#cheatsheet" class="btn btn-outline">Cheatsheet</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="stat-card"><div class="stat-num">40+</div><div class="stat-label"><strong>Topics Covered</strong>ES6 through ES2023</div></div>
+    <div class="stat-card"><div class="stat-num">40+</div><div class="stat-label"><strong>Live Consoles</strong>One per topic, editable</div></div>
+    <div class="stat-card"><div class="stat-num">8</div><div class="stat-label"><strong>ES Versions</strong>ES6, ES7, ES8 … ES2023</div></div>
+    <div class="stat-card"><div class="stat-num">0</div><div class="stat-label"><strong>Setup Required</strong>Everything runs in browser</div></div>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- MAIN LAYOUT -->
+<div class="page-layout" id="topics-area">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar"></aside>
+  <!-- CONTENT -->
+  <div class="main-content" id="mainContent"></div>
+</div>
+
+<!-- CHEATSHEET -->
+<section class="sec-wrap" id="cheatsheet">
+  <div class="sec-title">Quick Reference Cheatsheet</div>
+  <div class="sec-sub">The fastest way to remember key ES6+ improvements over old JavaScript patterns.</div>
+  <div style="overflow-x:auto">
+  <table class="cheat-table">
+    <thead><tr><th>Feature</th><th>Old Way</th><th>Modern ES6+</th><th>Why Better</th></tr></thead>
+    <tbody>
+      <tr><td>Variables</td><td class="td-b">var x = 1</td><td class="td-c">const / let x = 1</td><td class="td-g">Block scoped, no hoisting surprises</td></tr>
+      <tr><td>Functions</td><td class="td-b">function(a,b){ return a+b }</td><td class="td-c">(a,b) => a+b</td><td class="td-g">Concise, lexical this</td></tr>
+      <tr><td>Strings</td><td class="td-b">"Hi " + name + "!"</td><td class="td-c">`Hi ${name}!`</td><td class="td-g">Interpolation, multi-line</td></tr>
+      <tr><td>Object props</td><td class="td-b">{ name: name, age: age }</td><td class="td-c">{ name, age }</td><td class="td-g">Shorthand, less repetition</td></tr>
+      <tr><td>Array unpack</td><td class="td-b">var x=arr[0]; var y=arr[1]</td><td class="td-c">const [x,y] = arr</td><td class="td-g">Destructuring, clean</td></tr>
+      <tr><td>Merge objects</td><td class="td-b">Object.assign({}, a, b)</td><td class="td-c">{ ...a, ...b }</td><td class="td-g">Spread, readable</td></tr>
+      <tr><td>Async code</td><td class="td-b">callbacks / .then chains</td><td class="td-c">async / await</td><td class="td-g">Linear flow, try/catch</td></tr>
+      <tr><td>Null check</td><td class="td-b">x && x.y && x.y.z</td><td class="td-c">x?.y?.z</td><td class="td-g">Optional chaining, safe</td></tr>
+      <tr><td>Fallback value</td><td class="td-b">x !== undefined ? x : 'def'</td><td class="td-c">x ?? 'def'</td><td class="td-g">Nullish coalescing, precise</td></tr>
+      <tr><td>Unique array</td><td class="td-b">filter + indexOf trick</td><td class="td-c">[...new Set(arr)]</td><td class="td-g">Set dedup, instant</td></tr>
+      <tr><td>OOP</td><td class="td-b">function F(){}; F.prototype.m=...</td><td class="td-c">class F { method() {} }</td><td class="td-g">Clean syntax, extends</td></tr>
+      <tr><td>Iteration</td><td class="td-b">for(var i=0;i&lt;arr.length;i++)</td><td class="td-c">for (const x of arr)</td><td class="td-g">Iterable protocol</td></tr>
+      <tr><td>Error handling</td><td class="td-b">catch(e) { if(!e) ... }</td><td class="td-c">catch { ... } (optional binding)</td><td class="td-g">Cleaner catch blocks</td></tr>
+      <tr><td>Array search</td><td class="td-b">filter(fn)[0]</td><td class="td-c">find(fn) / findLast(fn)</td><td class="td-g">Returns item directly</td></tr>
+      <tr><td>Last item</td><td class="td-b">arr[arr.length-1]</td><td class="td-c">arr.at(-1)</td><td class="td-g">Negative indexing</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<footer style="padding:3rem 2.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+  <div style="font-size:1.3rem;font-weight:800;letter-spacing:-.02em">JS<span style="color:var(--accent)">.</span>MASTERY</div>
+  <div style="font-family:var(--font-m);font-size:.68rem;color:var(--muted)">// Learn modern JavaScript, one concept at a time</div>
+  <div style="display:flex;gap:1.2rem"><a href="#hero" style="font-family:var(--font-m);font-size:.68rem;color:var(--text-dim);text-decoration:none">Top ↑</a></div>
+</footer>
+
+<script>
+// ══════════════════
+// TOPICS DATA
+// ══════════════════
+const TOPICS = [
+  // ─── ES2015 (ES6) ───
+  { id:'t1', ver:'ES2015', badge:'es6', num:'01', title:'let & const',
+    desc:'Block-scoped variable declarations. <code>let</code> is reassignable; <code>const</code> is not. Both avoid the hoisting and function-scope pitfalls of <code>var</code>.',
+    points:['<code>let</code> — block scoped, can be reassigned','<code>const</code> — block scoped, cannot be reassigned','Both have Temporal Dead Zone (TDZ) — no access before declaration','<code>const</code> objects ARE mutable — only the binding is locked'],
+    code:`// let — reassignable, block scoped
+let score = 0;
+score = 100;
+console.log("score:", score);
+
+if (true) {
+  let blockVar = "only inside this block";
+  console.log(blockVar);
+}
+// console.log(blockVar); // ReferenceError!
+
+// const — cannot reassign the binding
+const PI = 3.14159;
+console.log("PI:", PI);
+
+// const objects ARE mutable
+const user = { name: "Alice", age: 30 };
+user.age = 31; // OK — mutating, not reassigning
+console.log(user);
+
+const nums = [1, 2, 3];
+nums.push(4); // OK
+console.log(nums);`},
+
+  { id:'t2', ver:'ES2015', badge:'es6', num:'02', title:'Arrow Functions',
+    desc:'Shorter <code>=></code> syntax for functions. Arrow functions inherit <code>this</code> from the enclosing scope (lexical this) — no more <code>self = this</code> hacks.',
+    points:['No own <code>this</code>, <code>arguments</code>, or <code>super</code>','Implicit return when body is a single expression','Cannot be used as constructors','Wrap returned object literals in <code>()</code>'],
+    code:`// Traditional vs Arrow
+function addOld(a, b) { return a + b; }
+const addNew = (a, b) => a + b;
+console.log(addOld(3, 7), addNew(3, 7));
+
+// Variations
+const double = x => x * 2;          // single param
+const greet  = () => "Hello!";       // no params
+const makeUser = name => ({ name, id: Date.now() }); // return object
+
+console.log(double(21));
+console.log(greet());
+console.log(makeUser("Alice"));
+
+// Array methods — arrows shine here
+const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const evens   = nums.filter(n => n % 2 === 0);
+const doubled = nums.map(n => n * 2);
+const sum     = nums.reduce((acc, n) => acc + n, 0);
+console.log("evens:", evens);
+console.log("doubled:", doubled);
+console.log("sum:", sum);`},
+
+  { id:'t3', ver:'ES2015', badge:'es6', num:'03', title:'Template Literals',
+    desc:'Use backtick strings with <code>${expr}</code> for interpolation, multi-line text, and tagged template functions.',
+    points:['Embed any JS expression inside <code>${}</code>','Multi-line strings without <code>\\n</code> escapes','Tagged templates allow custom string processing','Nested templates are allowed'],
+    code:`const name = "Suraj";
+const lang = "JavaScript";
+const year = new Date().getFullYear();
+
+// Basic interpolation
+console.log(\`Hello \${name}! Learning \${lang} in \${year}.\`);
+
+// Expressions inside ${}
+const a = 5, b = 10;
+console.log(\`\${a} + \${b} = \${a + b}\`);
+console.log(\`Status: \${a > b ? "a wins" : "b wins"}\`);
+
+// Multi-line
+const html = \`
+<div class="card">
+  <h2>\${name}</h2>
+  <p>Year: \${year}</p>
+</div>
+\`;
+console.log(html);
+
+// Tagged template
+function highlight(strings, ...vals) {
+  return strings.reduce((r, s, i) =>
+    r + s + (vals[i] !== undefined ? \`[\${vals[i]}]\` : ""), "");
+}
+console.log(highlight\`Name: \${name}, Year: \${year}\`);`},
+
+  { id:'t4', ver:'ES2015', badge:'es6', num:'04', title:'Destructuring',
+    desc:'Extract values from arrays or properties from objects into distinct variables in one clean statement.',
+    points:['Array destructuring uses position; object uses key names','Skip elements with commas in arrays','Default values prevent <code>undefined</code>','Rename with <code>{ original: newName }</code>','Works in function parameters'],
+    code:`// Array destructuring
+const [a, b, c] = [10, 20, 30];
+console.log(a, b, c);
+
+const [first, , third] = [1, 2, 3]; // skip middle
+console.log(first, third);
+
+// Default values
+const [x = 5, y = 7] = [1];
+console.log("x:", x, "y:", y);
+
+// Swap variables!
+let p = "hello", q = "world";
+[p, q] = [q, p];
+console.log(p, q);
+
+// Object destructuring
+const user = { name: "Alice", age: 30, city: "Ahmedabad", role: "dev" };
+const { name, age } = user;
+const { name: fullName, city = "Unknown" } = user; // rename + default
+const { role, ...rest } = user; // rest
+console.log(fullName, age, city);
+console.log("role:", role, "rest:", rest);
+
+// Nested + function params
+const { address: { street } = { street: "N/A" } } = {};
+console.log("street:", street);
+
+function greet({ name, role = "user" }) {
+  return \`\${name} is a \${role}\`;
+}
+console.log(greet(user));`},
+
+  { id:'t5', ver:'ES2015', badge:'es6', num:'05', title:'Default Parameters',
+    desc:'Set fallback values for function parameters when arguments are <code>undefined</code>.',
+    points:['Triggers only for <code>undefined</code>, NOT for <code>null</code>, <code>0</code>, or <code>""</code>','Default values can be expressions or function calls','Later params can reference earlier ones'],
+    code:`// Basic defaults
+function greet(name = "Guest", greeting = "Hello") {
+  return \`\${greeting}, \${name}!\`;
+}
+console.log(greet());
+console.log(greet("Alice"));
+console.log(greet("Bob", "Hi"));
+console.log(greet(undefined, "Hey")); // triggers default
+console.log(greet(null, "Hey"));      // null stays as null!
+
+// Expression as default
+function createId(prefix = "id", rand = Math.random().toString(36).slice(2,8)) {
+  return \`\${prefix}_\${rand}\`;
+}
+console.log(createId());
+console.log(createId("user"));
+
+// Reference earlier param
+function range(start = 0, end = start + 10) {
+  return { start, end };
+}
+console.log(range());    // { start: 0, end: 10 }
+console.log(range(5));   // { start: 5, end: 15 }
+console.log(range(2, 8));`},
+
+  { id:'t6', ver:'ES2015', badge:'es6', num:'06', title:'Rest & Spread',
+    desc:'The <code>...</code> operator: rest collects remaining elements into an array; spread expands an iterable into individual positions.',
+    points:['Rest must be the last parameter','Spread works on any iterable: arrays, strings, Sets, Maps','Spread creates shallow copies','Use spread to pass array as function args'],
+    code:`// REST — collect into array
+function sum(...nums) {
+  return nums.reduce((a, b) => a + b, 0);
+}
+console.log(sum(1, 2, 3, 4, 5)); // 15
+
+function log(level, ...messages) {
+  messages.forEach(m => console.log(\`[\${level}] \${m}\`));
+}
+log("INFO", "Server started", "Port 3000", "Ready");
+
+// SPREAD — expand
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5, 6];
+console.log("merged:", [...arr1, ...arr2]);
+console.log("max:", Math.max(...arr1, ...arr2));
+
+// Spread objects
+const defaults = { theme: "dark", lang: "en", debug: false };
+const overrides = { lang: "fr", version: "2.0" };
+const config = { ...defaults, ...overrides };
+console.log(config);
+
+// Shallow clone
+const original = [1, 2, 3];
+const clone = [...original];
+clone.push(99);
+console.log("original:", original, "clone:", clone);
+
+// Remove duplicates
+const dupes = [1,1,2,3,3,4,4,4,5];
+console.log("unique:", [...new Set(dupes)]);`},
+
+  { id:'t7', ver:'ES2015', badge:'es6', num:'07', title:'Enhanced Object Literals',
+    desc:'Shorthand properties, method shorthand, computed keys, and getter/setter in object literals.',
+    points:['Shorthand: <code>{ name }</code> instead of <code>{ name: name }</code>','Method shorthand: omit <code>function</code> keyword','Computed property names with <code>[expr]</code>','Getters/setters inline'],
+    code:`const name = "Alice", age = 30;
+
+// Shorthand properties
+const user = { name, age };
+console.log(user);
+
+// Method shorthand
+const obj = {
+  value: 42,
+  getValue() { return this.value; },          // no 'function'
+  async fetchData() { return "data"; },        // async method
+  double() { return this.value * 2; }
+};
+console.log(obj.getValue(), obj.double());
+
+// Computed property names
+const prefix = "get";
+const key = "dynamic";
+const api = {
+  [key]: "computed value",
+  [\`\${prefix}Name\`]: () => "Alice",
+  [\`\${prefix}Age\`]: () => 30
+};
+console.log(api.dynamic);
+console.log(api.getName(), api.getAge());
+
+// Getters & setters
+const person = {
+  _name: "bob",
+  get name() { return this._name.toUpperCase(); },
+  set name(v) { this._name = v.trim().toLowerCase(); }
+};
+console.log(person.name);   // "BOB"
+person.name = "  Alice  ";
+console.log(person.name);   // "ALICE"`},
+
+  { id:'t8', ver:'ES2015', badge:'es6', num:'08', title:'Classes',
+    desc:'Clean OOP syntax over prototype-based inheritance. Supports <code>extends</code>, <code>super</code>, static methods, getters/setters, and ES2022 private fields.',
+    points:['<code>constructor()</code> runs on <code>new</code>','<code>super()</code> must be called before <code>this</code> in subclass','<code>static</code> methods belong to the class, not instances','<code>#field</code> is truly private (ES2022)','<code>instanceof</code> works across the inheritance chain'],
+    code:`class Animal {
+  #energy = 100;       // private field (ES2022)
+  alive = true;        // public class field
+
+  constructor(name, sound) {
+    this.name  = name;
+    this.sound = sound;
+  }
+  speak()          { return \`\${this.name} says \${this.sound}!\`; }
+  eat(amount = 10) { this.#energy += amount; }
+  get energy()     { return this.#energy; }
+  static kingdom() { return "Animalia"; }
+}
+
+class Dog extends Animal {
+  constructor(name, breed) {
+    super(name, "Woof");
+    this.breed = breed;
+  }
+  speak() { return \`\${super.speak()} *wags tail*\`; }
+  fetch(item) { return \`\${this.name} fetched the \${item}!\`; }
+}
+
+class Cat extends Animal {
+  constructor(name) { super(name, "Meow"); }
+  purr() { return "Purrr..."; }
+}
+
+const dog = new Dog("Rex", "Labrador");
+const cat = new Cat("Whiskers");
+
+console.log(dog.speak());
+console.log(dog.fetch("ball"));
+console.log(cat.speak(), cat.purr());
+console.log(dog.energy);
+console.log(Animal.kingdom());
+console.log(dog instanceof Animal, dog instanceof Dog);
+console.log([dog, cat].map(a => a.speak()));`},
+
+  { id:'t9', ver:'ES2015', badge:'es6', num:'09', title:'Modules (import/export)',
+    desc:'Split code into files with named exports and default exports. Modules run in strict mode and have their own scope.',
+    points:['Named exports: multiple per file','Default export: one per file','Re-exports and namespace imports','Dynamic <code>import()</code> for lazy loading'],
+    code:`// Modules run in <script type="module"> in browsers.
+// Here we simulate the pattern:
+
+// ── utils.js ──────────────────────
+const PI = 3.14159;
+const add = (a, b) => a + b;
+const sub = (a, b) => a - b;
+function multiply(a, b) { return a * b; }
+
+// ── Using them ────────────────────
+console.log("PI:", PI);
+console.log("add:", add(3, 7));
+console.log("sub:", sub(10, 4));
+console.log("multiply:", multiply(6, 7));
+
+// Named export/import pattern
+const mathUtils = { PI, add, sub, multiply };
+const { PI: pi, add: addNums } = mathUtils;
+console.log("pi:", pi, "addNums:", addNums(1, 2));
+
+// Dynamic import simulation
+async function loadModule(name) {
+  const modules = {
+    math: { add, sub, multiply },
+    constants: { PI }
+  };
+  return modules[name];
+}
+
+(async () => {
+  const math = await loadModule("math");
+  console.log("lazy loaded:", math.add(5, 5));
+})();`},
+
+  { id:'t10', ver:'ES2015', badge:'es6', num:'10', title:'Promises',
+    desc:'Represent eventual async values. Chain with <code>.then()</code>, handle errors with <code>.catch()</code>, and run multiple with combinators.',
+    points:['Three states: pending, fulfilled, rejected','Chains are always async — even resolved promises','<code>Promise.all</code> — waits for all, fails fast','<code>Promise.allSettled</code> — always resolves with all results','<code>Promise.race</code> — first to settle wins'],
+    code:`// Creating a promise
+const fetchUser = (id) =>
+  new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (id > 0) resolve({ id, name: "Alice", role: "dev" });
+      else reject(new Error("Invalid ID: " + id));
+    }, 200);
+  });
+
+// Chaining
+fetchUser(1)
+  .then(user => { console.log("user:", user); return user.id * 10; })
+  .then(val  => console.log("computed:", val))
+  .catch(err => console.error("error:", err.message))
+  .finally(  () => console.log("done!"));
+
+// Combinators
+const delay = (ms, val) => new Promise(r => setTimeout(() => r(val), ms));
+
+Promise.all([delay(100,"A"), delay(200,"B"), delay(50,"C")])
+  .then(results => console.log("all:", results));
+
+Promise.allSettled([
+  Promise.resolve("ok"),
+  Promise.reject("fail"),
+  delay(80, "async ok")
+]).then(results => results.forEach(r =>
+  console.log(r.status + ":", r.value ?? r.reason)
+));
+
+Promise.race([delay(300,"slow"), delay(50,"fast")])
+  .then(winner => console.log("race winner:", winner));`},
+
+  { id:'t11', ver:'ES2015', badge:'es6', num:'11', title:'Symbol',
+    desc:'Unique, immutable primitive values. Every <code>Symbol()</code> call returns a completely unique value — great as object keys to avoid collisions.',
+    points:['Always unique: <code>Symbol("x") !== Symbol("x")</code>','Symbol keys are hidden from <code>Object.keys()</code> and <code>for...in</code>','<code>Symbol.for()</code> creates global shared symbols','Well-known symbols customize built-in behavior'],
+    code:`// Always unique
+const a = Symbol("id");
+const b = Symbol("id");
+console.log(a === b); // false!
+console.log(typeof a, a.toString());
+
+// As unique object key (non-enumerable)
+const ID  = Symbol("id");
+const KEY = Symbol("key");
+const obj = {
+  [ID]: 42,
+  [KEY]: "secret",
+  name: "Alice"
+};
+console.log(obj[ID]);
+console.log(Object.keys(obj));  // ["name"] — symbols hidden
+console.log(Object.getOwnPropertySymbols(obj)); // [Symbol(id), Symbol(key)]
+
+// Global registry
+const s1 = Symbol.for("shared");
+const s2 = Symbol.for("shared");
+console.log(s1 === s2); // true
+
+// Custom iterator with Symbol.iterator
+const range = {
+  from: 1, to: 5,
+  [Symbol.iterator]() {
+    let n = this.from;
+    return {
+      next: () => n <= this.to
+        ? { value: n++, done: false }
+        : { done: true }
+    };
+  }
+};
+console.log([...range]); // [1,2,3,4,5]`},
+
+  { id:'t12', ver:'ES2015', badge:'es6', num:'12', title:'Map & Set',
+    desc:'<code>Map</code> — key/value pairs with any key type. <code>Set</code> — ordered collection of unique values. Both are iterable and maintain insertion order.',
+    points:['Map keys can be objects, functions, any type','Set automatically removes duplicates','Both have <code>.size</code>, <code>.forEach()</code>, and are iterable','<code>WeakMap</code>/<code>WeakSet</code> hold weak references (no size, not iterable)'],
+    code:`// MAP
+const map = new Map();
+map.set("name", "Alice");
+map.set(42, "number key");
+map.set(true, "bool key");
+const objKey = { id: 1 };
+map.set(objKey, "object key!");
+
+console.log(map.get("name"));
+console.log(map.get(objKey));
+console.log("size:", map.size);
+
+// Iterate
+for (const [k, v] of map) console.log(k, "=>", v);
+
+// Frequency counter
+const words = ["apple","banana","apple","cherry","banana","apple"];
+const freq = new Map();
+words.forEach(w => freq.set(w, (freq.get(w) || 0) + 1));
+console.log([...freq.entries()].sort((a,b) => b[1]-a[1]));
+
+// SET
+const set = new Set([1,2,2,3,3,3,4]);
+console.log([...set]); // [1,2,3,4]
+console.log("has 2:", set.has(2));
+
+// Set operations
+const A = new Set([1,2,3,4,5]);
+const B = new Set([3,4,5,6,7]);
+const union        = new Set([...A, ...B]);
+const intersection = new Set([...A].filter(x => B.has(x)));
+const difference   = new Set([...A].filter(x => !B.has(x)));
+console.log("union:", [...union]);
+console.log("intersection:", [...intersection]);
+console.log("difference:", [...difference]);`},
+
+  { id:'t13', ver:'ES2015', badge:'es6', num:'13', title:'Generators & Iterators',
+    desc:'<code>function*</code> defines a generator that can pause with <code>yield</code> and resume. Produces values lazily — perfect for infinite sequences and custom iteration.',
+    points:['<code>yield</code> pauses and emits a value','<code>yield*</code> delegates to another iterable','Two-way communication: pass values back in via <code>gen.next(value)</code>','Generators are iterators — work with <code>for...of</code> and spread'],
+    code:`// Infinite counter
+function* counter(start = 0) {
+  while (true) yield start++;
+}
+
+// Finite range
+function* range(from, to, step = 1) {
+  for (let i = from; i <= to; i += step) yield i;
+}
+
+// Fibonacci
+function* fibonacci() {
+  let [a, b] = [0, 1];
+  while (true) { yield a; [a, b] = [b, a + b]; }
+}
+
+// take helper
+const take = (gen, n) => Array.from({length: n}, () => gen.next().value);
+
+console.log("range(1,10,2):", [...range(1, 10, 2)]);
+console.log("fib(10):", take(fibonacci(), 10));
+
+// yield* delegation
+function* combined() {
+  yield* [1, 2, 3];
+  yield* "AB";
+  yield 99;
+}
+console.log("combined:", [...combined()]);
+
+// Two-way: pass value IN
+function* accumulator() {
+  let total = 0;
+  while (true) {
+    const n = yield total;
+    if (n === null) break;
+    total += n;
+  }
+  return total;
+}
+const acc = accumulator();
+acc.next();       // start
+acc.next(10);
+acc.next(20);
+const { value } = acc.next(30);
+console.log("accumulated:", value);`},
+
+  { id:'t14', ver:'ES2015', badge:'es6', num:'14', title:'Proxy & Reflect',
+    desc:'<code>Proxy</code> intercepts object operations via traps. <code>Reflect</code> provides the default behaviour. Together they power reactive systems (Vue 3, MobX).',
+    points:['Traps: get, set, has, deleteProperty, apply, construct…','<code>Reflect</code> mirrors the proxy traps with default implementations','Great for validation, logging, reactivity, memoization'],
+    code:`// 1. Validation proxy
+function typed(obj, schema) {
+  return new Proxy(obj, {
+    set(t, k, v) {
+      if (schema[k] && typeof v !== schema[k])
+        throw new TypeError(\`\${k} must be \${schema[k]}, got \${typeof v}\`);
+      return Reflect.set(t, k, v);
+    }
+  });
+}
+const user = typed({}, { name: "string", age: "number" });
+user.name = "Alice";
+user.age  = 30;
+console.log(user);
+try { user.age = "old"; } catch(e) { console.error(e.message); }
+
+// 2. Observable / reactive proxy
+function reactive(data, onChange) {
+  return new Proxy(data, {
+    set(t, k, v) {
+      const old = t[k];
+      const r = Reflect.set(t, k, v);
+      if (old !== v) onChange({ key: k, from: old, to: v });
+      return r;
+    }
+  });
+}
+const state = reactive({ count: 0, name: "Alice" }, diff =>
+  console.log(\`[reactive] \${diff.key}: \${JSON.stringify(diff.from)} → \${JSON.stringify(diff.to)}\`)
+);
+state.count++;
+state.count += 9;
+state.name = "Bob";`},
+
+  // ─── ES2016 (ES7) ───
+  { id:'t15', ver:'ES2016', badge:'es7', num:'15', title:'Exponentiation Operator **',
+    desc:'The <code>**</code> operator raises a number to a power — cleaner than <code>Math.pow()</code>.',
+    points:['<code>2 ** 10</code> is equivalent to <code>Math.pow(2, 10)</code>','Right-associative: <code>2 ** 3 ** 2</code> = <code>2 ** (3**2)</code> = 512','Works with <code>**=</code> assignment shorthand'],
+    code:`// ES2016: Exponentiation
+console.log(2 ** 10);      // 1024
+console.log(3 ** 3);       // 27
+console.log(Math.sqrt(16) === 16 ** 0.5); // true
+
+// vs Math.pow
+const mathPow = Math.pow(2, 10);
+const newWay  = 2 ** 10;
+console.log(mathPow === newWay); // true
+
+// **= shorthand
+let base = 2;
+base **= 8;
+console.log("2^8 =", base); // 256
+
+// Practical: distance
+const distance = (x, y) => (x**2 + y**2) ** 0.5;
+console.log("distance(3,4):", distance(3, 4)); // 5
+
+// Right-associativity
+console.log(2 ** 3 ** 2);  // = 2 ** 9 = 512 (not 64!)
+console.log(2 ** (3 ** 2), (2 ** 3) ** 2); // 512 vs 64`},
+
+  { id:'t16', ver:'ES2016', badge:'es7', num:'16', title:'Array.prototype.includes()',
+    desc:'Check if an array contains a value. Unlike <code>indexOf</code>, it correctly handles <code>NaN</code>.',
+    points:['Returns boolean — no need to check <code>=== -1</code>','Correctly detects <code>NaN</code> (indexOf cannot)','Optional second argument: start index'],
+    code:`const fruits = ["apple", "banana", "cherry", "mango"];
+
+// includes vs indexOf
+console.log(fruits.includes("banana"));    // true
+console.log(fruits.includes("grape"));     // false
+console.log(fruits.indexOf("banana") > -1); // old way
+
+// NaN detection — the big win!
+const nums = [1, 2, NaN, 4, 5];
+console.log(nums.includes(NaN));     // true ✅
+console.log(nums.indexOf(NaN));      // -1  ❌ broken
+
+// Start index
+console.log(fruits.includes("apple", 1)); // false — starts from index 1
+
+// Practical guard
+function processItem(list, item) {
+  if (!list.includes(item)) {
+    console.warn(\`\${item} not in list\`);
+    return null;
+  }
+  return item.toUpperCase();
+}
+console.log(processItem(fruits, "cherry"));
+console.log(processItem(fruits, "grape"));`},
+
+  // ─── ES2017 (ES8) ───
+  { id:'t17', ver:'ES2017', badge:'es7', num:'17', title:'Async / Await',
+    desc:'Write asynchronous code that reads like synchronous code. <code>async</code> functions return a Promise; <code>await</code> pauses until a Promise settles.',
+    points:['<code>async</code> always returns a Promise','<code>await</code> only valid inside <code>async</code> functions (or top-level modules)','Use <code>try/catch</code> for error handling','Run independent tasks in parallel with <code>Promise.all</code>'],
+    code:`const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fetchData = (url) => sleep(100).then(() => ({
+  url, data: { id: 1, value: Math.random().toFixed(3) }
+}));
+
+// Sequential
+async function sequential() {
+  console.log("sequential start");
+  const a = await fetchData("/users");
+  const b = await fetchData("/posts");
+  console.log("sequential:", a.data, b.data);
+}
+
+// Parallel (faster!)
+async function parallel() {
+  console.log("parallel start");
+  const [a, b] = await Promise.all([
+    fetchData("/users"), fetchData("/posts")
+  ]);
+  console.log("parallel:", a.data, b.data);
+}
+
+// Error handling
+async function withError() {
+  try {
+    const res = await Promise.reject(new Error("Network error!"));
+    console.log(res);
+  } catch (err) {
+    console.error("caught:", err.message);
+  } finally {
+    console.log("cleanup done");
+  }
+}
+
+sequential().then(() => parallel()).then(() => withError());`},
+
+  { id:'t18', ver:'ES2017', badge:'es7', num:'18', title:'Object.values() & Object.entries()',
+    desc:'New static methods to extract object values and key-value pairs as arrays, making objects fully iterable.',
+    points:['<code>Object.keys()</code> — array of keys (existed before)','<code>Object.values()</code> — array of values','<code>Object.entries()</code> — array of <code>[key, value]</code> pairs','Combine with <code>Object.fromEntries()</code> to transform objects'],
+    code:`const product = {
+  name: "Laptop",
+  price: 999,
+  stock: 42,
+  rating: 4.8
+};
+
+console.log("keys:",    Object.keys(product));
+console.log("values:",  Object.values(product));
+console.log("entries:", Object.entries(product));
+
+// Iterate key-value pairs
+for (const [key, val] of Object.entries(product)) {
+  console.log(\`  \${key}: \${val}\`);
+}
+
+// Transform object values
+const doubled = Object.fromEntries(
+  Object.entries(product)
+    .filter(([, v]) => typeof v === "number")
+    .map(([k, v]) => [k, v * 2])
+);
+console.log("doubled numbers:", doubled);
+
+// Find key with max value
+const scores = { Alice: 95, Bob: 87, Carol: 92, Dave: 88 };
+const topEntry = Object.entries(scores).reduce((a, b) => b[1] > a[1] ? b : a);
+console.log("top scorer:", topEntry[0], "with", topEntry[1]);`},
+
+  { id:'t19', ver:'ES2017', badge:'es7', num:'19', title:'String padStart() & padEnd()',
+    desc:'Pad a string to a target length by prepending or appending characters.',
+    points:['<code>padStart(len, char)</code> — pad from start','<code>padEnd(len, char)</code> — pad from end','Default pad character is a space','Useful for formatting tables, IDs, time displays'],
+    code:`// padStart
+console.log("7".padStart(3, "0"));        // "007"
+console.log("42".padStart(5, "0"));       // "00042"
+console.log("hi".padStart(8));            // "      hi"
+
+// padEnd
+console.log("hi".padEnd(8, "."));         // "hi......"
+console.log("test".padEnd(10, "-*"));     // "test-*-*-*"
+
+// Format a table
+const data = [
+  { name: "Alice",   score: 95 },
+  { name: "Bob",     score: 87 },
+  { name: "Charlie", score: 100 },
+];
+console.log("Name       | Score");
+console.log("-".repeat(20));
+data.forEach(({ name, score }) => {
+  console.log(name.padEnd(10) + " | " + String(score).padStart(5));
+});
+
+// Format time HH:MM:SS
+function formatTime(h, m, s) {
+  return [h, m, s].map(n => String(n).padStart(2, "0")).join(":");
+}
+console.log(formatTime(9, 5, 3));   // "09:05:03"
+console.log(formatTime(14, 30, 0)); // "14:30:00"`},
+
+  { id:'t20', ver:'ES2017', badge:'es7', num:'20', title:'Object.getOwnPropertyDescriptors()',
+    desc:'Returns all own property descriptors, enabling a complete shallow copy that preserves getters, setters, and non-enumerable properties.',
+    points:['<code>Object.assign()</code> copies values, losing getters/setters','<code>getOwnPropertyDescriptors</code> + <code>Object.create()</code> creates perfect clones','Also enables proper mixin patterns'],
+    code:`const source = {
+  _name: "Alice",
+  get name() { return this._name.toUpperCase(); },
+  set name(v) { this._name = v.trim(); }
+};
+
+// Object.assign LOSES getters
+const badCopy = Object.assign({}, source);
+console.log("badCopy.name:", badCopy.name); // value, not getter
+
+// getOwnPropertyDescriptors PRESERVES them
+const goodCopy = Object.create(
+  Object.getPrototypeOf(source),
+  Object.getOwnPropertyDescriptors(source)
+);
+console.log("goodCopy.name:", goodCopy.name); // getter works!
+
+// Inspect descriptors
+const desc = Object.getOwnPropertyDescriptors(source);
+console.log("name descriptor:", desc.name);
+
+// Mixin pattern
+function mixin(target, ...sources) {
+  sources.forEach(src =>
+    Object.defineProperties(target, Object.getOwnPropertyDescriptors(src))
+  );
+  return target;
+}
+const base = { x: 1 };
+mixin(base, { double() { return this.x * 2; } });
+console.log("mixin result:", base.double());`},
+
+  // ─── ES2018 (ES9) ───
+  { id:'t21', ver:'ES2018', badge:'es7', num:'21', title:'Async Iteration & for-await-of',
+    desc:'Iterate over asynchronous data sources — like streams or paginated APIs — with <code>for await...of</code>.',
+    points:['Async iterables implement <code>Symbol.asyncIterator</code>','<code>for await...of</code> consumes them','Works with generators: <code>async function*</code>'],
+    code:`// Async generator — simulates paginated API
+async function* fetchPages(totalPages) {
+  for (let page = 1; page <= totalPages; page++) {
+    await new Promise(r => setTimeout(r, 80)); // simulate network
+    yield {
+      page,
+      data: Array.from({length: 3}, (_, i) => \`item_\${(page-1)*3+i+1}\`)
+    };
+  }
+}
+
+// for-await-of
+async function loadAll() {
+  const allItems = [];
+  for await (const { page, data } of fetchPages(3)) {
+    console.log(\`page \${page}:\`, data);
+    allItems.push(...data);
+  }
+  console.log("all items:", allItems);
+}
+
+// Async iterable object
+function asyncRange(from, to) {
+  return {
+    [Symbol.asyncIterator]() {
+      let n = from;
+      return {
+        async next() {
+          await new Promise(r => setTimeout(r, 30));
+          return n <= to ? { value: n++, done: false } : { done: true };
+        }
+      };
+    }
+  };
+}
+
+async function run() {
+  await loadAll();
+  const results = [];
+  for await (const n of asyncRange(1, 5)) results.push(n);
+  console.log("async range:", results);
+}
+run();`},
+
+  { id:'t22', ver:'ES2018', badge:'es7', num:'22', title:'Object Rest & Spread',
+    desc:'Spread operator extended to objects — clone, merge, and extract remaining properties.',
+    points:['Object spread: <code>{ ...obj }</code> shallow-clones','Object rest in destructuring: <code>const { a, ...rest } = obj</code>','Later properties override earlier ones in spread','Nested objects are still shallow-copied'],
+    code:`// Object spread — merge/clone
+const defaults = { theme: "dark", lang: "en", debug: false, version: 1 };
+const userPrefs = { lang: "fr", debug: true };
+const config = { ...defaults, ...userPrefs, timestamp: Date.now() };
+console.log(config);
+
+// Override specific key
+const updated = { ...config, version: 2 };
+console.log("version:", updated.version);
+
+// Object rest — pick/omit pattern
+const { theme, lang, debug, ...rest } = config;
+console.log("theme:", theme, "lang:", lang);
+console.log("rest:", rest);
+
+// Omit keys pattern
+function omit(obj, ...keys) {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([k]) => !keys.includes(k))
+  );
+}
+console.log("omit debug:", omit(config, "debug", "timestamp"));
+
+// Deep clone? No — spread is shallow
+const original = { a: { nested: 1 }, b: 2 };
+const clone = { ...original };
+clone.a.nested = 999; // mutates original.a too!
+console.log("shallow trap:", original.a.nested); // 999`},
+
+  { id:'t23', ver:'ES2018', badge:'es7', num:'23', title:'Promise.finally()',
+    desc:'Run a callback after a promise settles — whether it resolved or rejected. Perfect for cleanup code like hiding a loading spinner.',
+    points:['Runs regardless of success or failure','Does not receive the resolved value or rejection reason','Returns a new promise, enabling further chaining','Equivalent to finally in try/catch/finally'],
+    code:`const delay = (ms, val, fail=false) => new Promise((res, rej) =>
+  setTimeout(() => fail ? rej(new Error(val)) : res(val), ms)
+);
+
+// Loading state simulation
+let loading = false;
+async function fetchWithSpinner(succeed) {
+  loading = true;
+  console.log("loading:", loading);
+  try {
+    const data = await delay(200, succeed ? "data!" : "network error", !succeed);
+    console.log("success:", data);
+    return data;
+  } catch(err) {
+    console.error("error:", err.message);
+  } finally {
+    loading = false;
+    console.log("loading:", loading, "(always runs)");
+  }
+}
+
+// .finally() in promise chain
+delay(100, "result")
+  .then(v  => { console.log("then:", v); return v.toUpperCase(); })
+  .then(v  => console.log("chained:", v))
+  .catch(e => console.error(e))
+  .finally(() => console.log("chain cleanup"));
+
+fetchWithSpinner(true).then(() => fetchWithSpinner(false));`},
+
+  // ─── ES2019 (ES10) ───
+  { id:'t24', ver:'ES2019', badge:'es7', num:'24', title:'Array flat() & flatMap()',
+    desc:'<code>flat()</code> flattens nested arrays. <code>flatMap()</code> maps and then flattens one level — more efficient than <code>.map().flat()</code>.',
+    points:['<code>flat(depth)</code> — default depth is 1','<code>flat(Infinity)</code> — fully flatten any depth','<code>flatMap(fn)</code> is equivalent to <code>.map(fn).flat(1)</code>','Great for expanding items in a list'],
+    code:`// flat
+const nested = [1, [2, 3], [4, [5, 6]], [7, [8, [9]]]];
+console.log(nested.flat());           // depth 1
+console.log(nested.flat(2));          // depth 2
+console.log(nested.flat(Infinity));   // fully flat
+
+// Remove empty slots
+const sparse = [1, , 2, , 3];
+console.log(sparse.flat()); // removes empty slots!
+
+// flatMap — map + flatten 1 level
+const sentences = ["hello world", "foo bar baz", "one two"];
+const words = sentences.flatMap(s => s.split(" "));
+console.log("words:", words);
+
+// Expand items pattern
+const orders = [
+  { id: 1, items: ["apple", "banana"] },
+  { id: 2, items: ["cherry"] },
+  { id: 3, items: ["date", "elderberry", "fig"] },
+];
+const allItems = orders.flatMap(o => o.items);
+console.log("all items:", allItems);
+
+// Filter + expand
+const allItemsFiltered = orders
+  .filter(o => o.items.length > 1)
+  .flatMap(o => o.items.map(item => ({ orderId: o.id, item })));
+console.log("expanded:", allItemsFiltered);`},
+
+  { id:'t25', ver:'ES2019', badge:'es7', num:'25', title:'Object.fromEntries()',
+    desc:'Convert an iterable of <code>[key, value]</code> pairs back into an object. The inverse of <code>Object.entries()</code>.',
+    points:['Accepts any iterable of <code>[key, val]</code> pairs','Works with Map too','Combine with <code>entries()</code> + <code>map()</code>/<code>filter()</code> to transform objects'],
+    code:`// Basic
+const entries = [["name", "Alice"], ["age", 30], ["city", "Ahmedabad"]];
+const obj = Object.fromEntries(entries);
+console.log(obj);
+
+// Transform object values
+const prices = { apple: 1.5, banana: 0.75, cherry: 3.0, date: 5.0 };
+
+// Double all prices
+const doubled = Object.fromEntries(
+  Object.entries(prices).map(([k, v]) => [k, v * 2])
+);
+console.log("doubled:", doubled);
+
+// Filter expensive items
+const expensive = Object.fromEntries(
+  Object.entries(prices).filter(([, v]) => v > 1)
+);
+console.log("expensive:", expensive);
+
+// From a Map
+const map = new Map([["x", 10], ["y", 20], ["z", 30]]);
+const fromMap = Object.fromEntries(map);
+console.log("from map:", fromMap);
+
+// URL params → object
+const params = new URLSearchParams("name=Alice&age=30&city=NYC");
+const paramsObj = Object.fromEntries(params);
+console.log("url params:", paramsObj);`},
+
+  { id:'t26', ver:'ES2019', badge:'es7', num:'26', title:'String trimStart() & trimEnd()',
+    desc:'Trim whitespace from only the start or only the end of a string.',
+    points:['<code>trimStart()</code> / <code>trimLeft()</code> — remove leading whitespace','<code>trimEnd()</code> / <code>trimRight()</code> — remove trailing whitespace','<code>trim()</code> removes both ends (existed before)'],
+    code:`const str = "   Hello, World!   ";
+
+console.log("|" + str.trim()      + "|");  // both
+console.log("|" + str.trimStart() + "|");  // left only
+console.log("|" + str.trimEnd()   + "|");  // right only
+
+// Practical: user input normalization
+function normalizeInput(input) {
+  return input.trimStart().trimEnd().replace(/\\s+/g, " ");
+}
+console.log(normalizeInput("  hello   world   "));
+
+// Preserve intentional leading space
+const code = "  function foo() {";
+console.log("indented:", "|" + code.trimEnd() + "|");
+
+// Process log lines
+const logLines = [
+  "  [INFO] Server started  ",
+  "[ERROR] Connection failed   ",
+  "   [WARN] Low memory  "
+];
+const cleaned = logLines.map(l => l.trim());
+console.log(cleaned);`},
+
+  { id:'t27', ver:'ES2019', badge:'es7', num:'27', title:'Optional Catch Binding',
+    desc:'Omit the error parameter in <code>catch</code> when you don\'t need it.',
+    points:['Previously catch always required a binding: <code>catch(e) {}</code>','Now you can write <code>catch {}</code> without the variable','Useful when you only care about the error happening, not the error itself'],
+    code:`// Old way — had to name the binding even if unused
+try {
+  JSON.parse("invalid");
+} catch(e) {
+  console.log("parse failed (old way, e unused)");
+}
+
+// ES2019 — omit the binding
+try {
+  JSON.parse("invalid");
+} catch {
+  console.log("parse failed (no binding needed)");
+}
+
+// Practical: feature detection
+function isValidJSON(str) {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
+console.log(isValidJSON('{"a":1}'));  // true
+console.log(isValidJSON("not json")); // false
+
+// Retry pattern
+async function tryFetch(url, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      // simulate: fail first 2, succeed on 3rd
+      if (i < 2) throw new Error("network error");
+      return { ok: true, data: "fetched!", attempt: i + 1 };
+    } catch {
+      console.log(\`attempt \${i+1} failed, retrying...\`);
+    }
+  }
+}
+tryFetch("/api").then(r => console.log("result:", r));`},
+
+  // ─── ES2020 ───
+  { id:'t28', ver:'ES2020', badge:'new', num:'28', title:'Optional Chaining ?.',
+    desc:'Safely access nested properties without crashing when an intermediate value is <code>null</code> or <code>undefined</code>.',
+    points:['<code>?.</code> short-circuits and returns <code>undefined</code> on null/undefined','Works on properties, methods, and array indexes','Can be chained: <code>a?.b?.c?.d</code>','Combine with <code>??</code> for a default value'],
+    code:`const user = {
+  name: "Alice",
+  address: { city: "Ahmedabad", zip: "380001" },
+  greet: () => "Hello!",
+  scores: [95, 87, 92]
+};
+
+// Without optional chaining
+const cityOld = user && user.address && user.address.city;
+console.log("old way:", cityOld);
+
+// With optional chaining
+console.log(user?.address?.city);       // "Ahmedabad"
+console.log(user?.phone?.number);       // undefined (no error!)
+console.log(user?.greet?.());           // "Hello!"
+console.log(user?.missing?.());         // undefined
+console.log(user?.scores?.[0]);         // 95
+console.log(user?.scores?.[99]);        // undefined
+
+// Combined with ?? for defaults
+const phone = user?.phone?.number ?? "No phone";
+const score = user?.scores?.[0] ?? 0;
+console.log(phone, score);
+
+// Real-world: API response drilling
+const apiResponse = { data: { users: [{ id: 1, profile: { bio: "Dev" } }] } };
+console.log(apiResponse?.data?.users?.[0]?.profile?.bio);   // "Dev"
+console.log(apiResponse?.data?.users?.[1]?.profile?.bio ?? "N/A"); // "N/A"`},
+
+  { id:'t29', ver:'ES2020', badge:'new', num:'29', title:'Nullish Coalescing ??',
+    desc:'Return the right-hand side only when the left is <code>null</code> or <code>undefined</code> — not all falsy values.',
+    points:['<code>||</code> catches ALL falsy: <code>0</code>, <code>""</code>, <code>false</code>, <code>null</code>, <code>undefined</code>','<code>??</code> only catches <code>null</code> or <code>undefined</code>','<code>??=</code> — nullish assignment (ES2021)','Combine <code>?.</code> and <code>??</code> for safe access + default'],
+    code:`// || vs ??
+const port  = 0;
+const theme = "";
+const count = false;
+const name  = null;
+
+console.log("|| results:", port || 3000, theme || "light", count || true, name || "Guest");
+console.log("?? results:", port ?? 3000, theme ?? "light", count ?? true, name ?? "Guest");
+
+// Only null/undefined triggers ??
+console.log(0         ?? "default"); // 0     ← keeps 0
+console.log(""        ?? "default"); // ""    ← keeps empty string
+console.log(false     ?? "default"); // false ← keeps false
+console.log(null      ?? "default"); // "default"
+console.log(undefined ?? "default"); // "default"
+
+// Nullish assignment ??= (ES2021)
+let a = null, b = 0, c = "hello";
+a ??= "assigned";   // null → gets assigned
+b ??= "assigned";   // 0 → NOT assigned (0 is not null/undefined)
+c ??= "assigned";   // "hello" → NOT assigned
+console.log(a, b, c);
+
+// Combined with ?.
+const config = { server: { port: 0, timeout: null } };
+const p = config?.server?.port    ?? 3000;  // 0 (not null)
+const t = config?.server?.timeout ?? 5000;  // 5000 (null)
+console.log("port:", p, "timeout:", t);`},
+
+  { id:'t30', ver:'ES2020', badge:'new', num:'30', title:'Promise.allSettled()',
+    desc:'Like <code>Promise.all</code> but never rejects — waits for ALL promises and returns their settled status.',
+    points:['Returns array of <code>{ status: "fulfilled", value }</code> or <code>{ status: "rejected", reason }</code>','Never short-circuits on rejection','Great for batch operations where you want all results'],
+    code:`const ok   = (val, ms=100) => new Promise(r => setTimeout(() => r(val), ms));
+const fail = (msg, ms=100) => new Promise((_,r) => setTimeout(() => r(new Error(msg)), ms));
+
+// allSettled — ALL results, even failures
+Promise.allSettled([
+  ok("user data"),
+  fail("network error"),
+  ok("posts data"),
+  fail("timeout"),
+  ok("settings")
+]).then(results => {
+  results.forEach((r, i) => {
+    if (r.status === "fulfilled") {
+      console.log(\`✓ [\${i}] \${r.value}\`);
+    } else {
+      console.log(\`✗ [\${i}] \${r.reason.message}\`);
+    }
+  });
+
+  const succeeded = results.filter(r => r.status === "fulfilled").map(r => r.value);
+  const failed    = results.filter(r => r.status === "rejected").map(r => r.reason.message);
+  console.log("succeeded:", succeeded);
+  console.log("failed:", failed);
+});
+
+// vs Promise.all (stops at first failure)
+Promise.all([ok("a"), fail("oops"), ok("c")])
+  .catch(e => console.log("Promise.all short-circuits:", e.message));`},
+
+  { id:'t31', ver:'ES2020', badge:'new', num:'31', title:'BigInt',
+    desc:'Handle integers larger than <code>Number.MAX_SAFE_INTEGER</code> (2^53 - 1) precisely with the BigInt type.',
+    points:['Create with <code>n</code> suffix or <code>BigInt()</code>','Cannot mix BigInt with regular numbers directly','No floating point — integer only','Use for IDs, cryptography, and large integer math'],
+    code:`// Regular numbers lose precision beyond MAX_SAFE_INTEGER
+console.log(Number.MAX_SAFE_INTEGER);        // 9007199254740991
+console.log(9007199254740991 + 1);           // 9007199254740992
+console.log(9007199254740991 + 2);           // 9007199254740992 ← same! BUG
+
+// BigInt — exact precision
+console.log(9007199254740991n + 1n);         // 9007199254740992n
+console.log(9007199254740991n + 2n);         // 9007199254740993n ← correct!
+
+// BigInt operations
+const big = 12345678901234567890n;
+console.log(big * 2n);
+console.log(big ** 2n);
+console.log(big / 3n);   // integer division (truncates)
+
+// Type checks
+console.log(typeof 42n);        // "bigint"
+console.log(42n === 42);        // false (different types)
+console.log(42n == 42);         // true (loose equality)
+
+// Practical: safe large IDs
+const userId = 9999999999999999999n;
+console.log("userId:", userId.toString());
+
+// Convert when needed
+const asNumber = Number(42n);
+const asBigInt = BigInt(42);
+console.log(asNumber, asBigInt);`},
+
+  // ─── ES2021 ───
+  { id:'t32', ver:'ES2021', badge:'new', num:'32', title:'String replaceAll()',
+    desc:'Replace all occurrences of a substring without using a global regex.',
+    points:['<code>replace()</code> only replaces the first match for strings','<code>replaceAll()</code> replaces every occurrence','Accepts a string or regex (regex must not have /g flag)'],
+    code:`const text = "the cat sat on the mat near the cat";
+
+// Old way — needed regex /g
+console.log(text.replace(/cat/g, "dog"));
+
+// New: replaceAll
+console.log(text.replaceAll("cat", "dog"));
+console.log(text.replaceAll("the", "a"));
+
+// vs replace (string) — only first match
+console.log(text.replace("cat", "dog")); // only first!
+
+// With special characters (no regex escaping needed)
+const path = "C:\\\\Users\\\\Alice\\\\Documents";
+console.log(path.replaceAll("\\\\", "/"));
+
+// Template-style replacement
+function template(str, vars) {
+  return Object.entries(vars).reduce(
+    (s, [k, v]) => s.replaceAll(\`{{\${k}}}\`, v), str
+  );
+}
+const tpl = "Hello {{name}}! You have {{count}} messages, {{name}}.";
+console.log(template(tpl, { name: "Alice", count: 5 }));`},
+
+  { id:'t33', ver:'ES2021', badge:'new', num:'33', title:'Logical Assignment Operators',
+    desc:'Combine logical operators with assignment: <code>||=</code>, <code>&&=</code>, <code>??=</code>.',
+    points:['<code>x ||= y</code> — assign y if x is falsy','<code>x &&= y</code> — assign y if x is truthy','<code>x ??= y</code> — assign y if x is null/undefined','Short-circuit: only assigns if the condition is met'],
+    code:`// ||= assign if falsy
+let a = 0;    a ||= 42;   console.log("||=", a); // 42 (0 is falsy)
+let b = "hi"; b ||= "default"; console.log("||=", b); // "hi"
+
+// &&= assign if truthy
+let x = 1;    x &&= 99;   console.log("&&=", x); // 99 (1 is truthy)
+let y = 0;    y &&= 99;   console.log("&&=", y); // 0 (0 is falsy, no assign)
+
+// ??= assign if null/undefined
+let p = null;  p ??= "set"; console.log("??=", p); // "set"
+let q = 0;     q ??= "set"; console.log("??=", q); // 0 (not null/undefined)
+let r = "";    r ??= "set"; console.log("??=", r); // "" (not null/undefined)
+
+// Practical: object defaults
+const user = { name: "Alice", score: 0, bio: null };
+user.name  ||= "Guest";    // "Alice" stays (truthy)
+user.score ||= 100;        // 0 → becomes 100 (falsy!)
+user.bio   ??= "No bio";   // null → "No bio"
+user.tags  ??= [];         // undefined → []
+console.log(user);
+
+// Cache pattern with &&=
+const cache = {};
+function getOrCompute(key, compute) {
+  cache[key] ??= compute();  // only compute if not cached
+  return cache[key];
+}
+console.log(getOrCompute("pi", () => Math.PI.toFixed(5)));
+console.log(getOrCompute("pi", () => "recomputed")); // uses cache!`},
+
+  { id:'t34', ver:'ES2021', badge:'new', num:'34', title:'Promise.any() & AggregateError',
+    desc:'<code>Promise.any()</code> resolves with the first fulfilled promise. Rejects only if ALL promises reject, with an <code>AggregateError</code> collecting all errors.',
+    points:['Opposite of <code>Promise.all()</code>','Fulfils on first success; rejects only if all fail','<code>AggregateError.errors</code> contains all rejection reasons','Useful for "try multiple sources, use the first that works"'],
+    code:`const ok   = (val, ms) => new Promise(r => setTimeout(() => r(val), ms));
+const fail = (msg, ms) => new Promise((_,r) => setTimeout(() => r(new Error(msg)), ms));
+
+// any() — first to succeed wins
+Promise.any([
+  fail("slow fail", 300),
+  ok("fast success!", 50),
+  ok("medium success", 200)
+]).then(v => console.log("any() winner:", v));
+
+// All fail → AggregateError
+Promise.any([
+  fail("error 1", 50),
+  fail("error 2", 100),
+  fail("error 3", 150)
+]).catch(err => {
+  console.log("all failed:", err instanceof AggregateError);
+  console.log("errors:", err.errors.map(e => e.message));
+});
+
+// Practical: try multiple CDN mirrors
+async function fetchFromAny(urls) {
+  try {
+    const data = await Promise.any(
+      urls.map(url => ok(\`data from \${url}\`, Math.random() * 200))
+    );
+    console.log("got:", data);
+    return data;
+  } catch(e) {
+    console.error("all CDNs failed");
+  }
+}
+fetchFromAny(["cdn1.example.com", "cdn2.example.com", "cdn3.example.com"]);`},
+
+  // ─── ES2022 ───
+  { id:'t35', ver:'ES2022', badge:'new', num:'35', title:'Array.at() & String.at()',
+    desc:'Access array/string elements by index, including <em>negative</em> indices to count from the end.',
+    points:['<code>arr.at(-1)</code> is the last element','<code>arr.at(-2)</code> is second to last','Works on strings too','Cleaner than <code>arr[arr.length - 1]</code>'],
+    code:`const fruits = ["apple", "banana", "cherry", "mango", "orange"];
+
+// at() with positive indices
+console.log(fruits.at(0));   // "apple"
+console.log(fruits.at(2));   // "cherry"
+
+// Negative indices — count from end
+console.log(fruits.at(-1));  // "orange" (last)
+console.log(fruits.at(-2));  // "mango"  (second to last)
+console.log(fruits.at(-3));  // "cherry"
+
+// vs old way
+console.log(fruits[fruits.length - 1]);  // old, verbose
+
+// String.at()
+const str = "Hello, World!";
+console.log(str.at(0));   // "H"
+console.log(str.at(-1));  // "!"
+console.log(str.at(-6));  // "W"
+
+// Practical: circular indexing
+function circular(arr, i) {
+  return arr.at(i % arr.length);
+}
+const colors = ["red", "green", "blue"];
+[0,1,2,3,4,5,6].forEach(i =>
+  console.log(\`index \${i}: \${circular(colors, i)}\`)
+);`},
+
+  { id:'t36', ver:'ES2022', badge:'new', num:'36', title:'Object.hasOwn()',
+    desc:'A safer and more ergonomic way to check if an object has a specific own property.',
+    points:['Replaces <code>obj.hasOwnProperty(key)</code>','Works even on objects with null prototype','Works on objects created with <code>Object.create(null)</code>','Static method — no prototype chain issues'],
+    code:`const user = { name: "Alice", age: 30, role: "dev" };
+
+// Old way — can be overridden or fail on null-prototype objects
+console.log(user.hasOwnProperty("name"));  // true
+console.log(user.hasOwnProperty("toString")); // false (inherited)
+
+// New way — Object.hasOwn
+console.log(Object.hasOwn(user, "name"));  // true
+console.log(Object.hasOwn(user, "email")); // false
+
+// Works on null-prototype objects (where hasOwnProperty fails!)
+const pure = Object.create(null);
+pure.x = 10;
+// pure.hasOwnProperty("x"); // TypeError — no prototype!
+console.log(Object.hasOwn(pure, "x")); // true ✅
+
+// Safely filter own vs inherited
+function Person(name) { this.name = name; }
+Person.prototype.greet = function() { return "Hi!"; };
+const p = new Person("Bob");
+
+for (const key in p) {
+  if (Object.hasOwn(p, key)) {
+    console.log("own:", key, "=", p[key]);
+  } else {
+    console.log("inherited:", key);
+  }
+}`},
+
+  { id:'t37', ver:'ES2022', badge:'new', num:'37', title:'Top-level await',
+    desc:'Use <code>await</code> at the top level of ES modules — no need to wrap in an <code>async</code> function.',
+    points:['Only works in ES modules (<code>type="module"</code>)','Blocks the module from being used until the await resolves','Great for loading config, DB connections, i18n','Simulated here with an async IIFE'],
+    code:`// In real ES modules you can write:
+//   const config = await fetch('/config.json').then(r => r.json());
+// at the TOP LEVEL. Here we simulate it:
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fetchConfig = () => sleep(100).then(() => ({
+  dbUrl: "postgres://localhost/mydb",
+  port: 3000,
+  debug: true
+}));
+
+// Simulating top-level await with IIFE
+// (In a real module, these two awaits would be at file top level)
+(async () => {
+  console.log("module loading...");
+
+  // These would be top-level in real modules:
+  const config = await fetchConfig();
+  console.log("config loaded:", config);
+
+  const { port, debug } = config;
+  console.log(\`Server starting on port \${port} (debug=\${debug})\`);
+
+  // Module is now "ready" — other imports would wait for this
+  console.log("module ready!");
+})();`},
+
+  { id:'t38', ver:'ES2022', badge:'new', num:'38', title:'Class Static Blocks & Private Fields',
+    desc:'Complex static initialization with <code>static { }</code> blocks, and truly private instance/static fields with <code>#</code>.',
+    points:['<code>#field</code> — private instance field, throws on external access','<code>static #field</code> — private static field','<code>static { }</code> — complex static initialization (ES2022)','Private methods: <code>#method() { }</code>'],
+    code:`class Config {
+  // Private instance fields
+  #apiKey;
+  #endpoint;
+  #retries = 3;
+
+  // Private static field
+  static #instances = 0;
+
+  // Static initialization block
+  static {
+    console.log("Config class initialized");
+    Config.#instances = 0; // complex setup allowed here
+  }
+
+  constructor(apiKey, endpoint) {
+    this.#apiKey    = apiKey;
+    this.#endpoint  = endpoint;
+    Config.#instances++;
+  }
+
+  // Private method
+  #buildUrl(path) {
+    return \`\${this.#endpoint}/\${path}?key=\${this.#apiKey.slice(0,4)}...\`;
+  }
+
+  async request(path) {
+    const url = this.#buildUrl(path);
+    console.log("requesting:", url);
+    return { url, data: "mock data" };
+  }
+
+  get retries()          { return this.#retries; }
+  static get count()     { return Config.#instances; }
+}
+
+const c1 = new Config("secret-key-abc", "https://api.example.com");
+const c2 = new Config("another-key-xyz", "https://api2.example.com");
+
+c1.request("users").then(r => console.log(r));
+console.log("instances:", Config.count);
+
+// try { console.log(c1.#apiKey); } catch(e) { console.log(e.message); }`},
+
+  // ─── ES2023 ───
+  { id:'t39', ver:'ES2023', badge:'new', num:'39', title:'Array findLast() & findLastIndex()',
+    desc:'Search arrays from the end. Like <code>find()</code> and <code>findIndex()</code> but in reverse order.',
+    points:['<code>findLast(fn)</code> — last element matching predicate','<code>findLastIndex(fn)</code> — index of last match','Non-destructive — does not modify the array','Return <code>undefined</code> / <code>-1</code> when not found'],
+    code:`const nums = [1, 2, 3, 4, 5, 4, 3, 2, 1];
+
+console.log(nums.find(n => n > 3));           // 4 (first)
+console.log(nums.findLast(n => n > 3));       // 4 (last!)
+console.log(nums.findIndex(n => n > 3));      // 3
+console.log(nums.findLastIndex(n => n > 3));  // 5
+
+// Log entries example
+const logs = [
+  { level: "info",  msg: "start",   ts: 1 },
+  { level: "warn",  msg: "slow",    ts: 2 },
+  { level: "error", msg: "crash",   ts: 3 },
+  { level: "info",  msg: "restart", ts: 4 },
+  { level: "error", msg: "timeout", ts: 5 },
+  { level: "info",  msg: "ok",      ts: 6 },
+];
+
+const lastError = logs.findLast(l => l.level === "error");
+console.log("last error:", lastError);
+
+const lastErrorIdx = logs.findLastIndex(l => l.level === "error");
+console.log("last error at index:", lastErrorIdx);
+
+// Find last even number
+const data = [1,2,3,4,5,6,7,8,9,10,9,8,7];
+console.log(data.findLast(n => n % 2 === 0));     // 8
+console.log(data.findLastIndex(n => n % 2 === 0)); // 11`},
+
+  { id:'t40', ver:'ES2023', badge:'new', num:'40', title:'Immutable Array Methods: toSorted, toReversed, toSpliced, with()',
+    desc:'New non-mutating array methods that return a new array instead of modifying in place.',
+    points:['<code>toSorted()</code> — sorted copy, original unchanged','<code>toReversed()</code> — reversed copy','<code>toSpliced(i, del, ...items)</code> — spliced copy','<code>with(index, value)</code> — copy with one element changed'],
+    code:`const nums = [3, 1, 4, 1, 5, 9, 2, 6, 5];
+const fruits = ["banana", "apple", "cherry", "mango"];
+
+// MUTATING (old)
+// nums.sort()    — mutates!
+// nums.reverse() — mutates!
+
+// NON-MUTATING (new)
+const sorted   = nums.toSorted((a, b) => a - b);
+const reversed = nums.toReversed();
+console.log("original:", nums);    // unchanged!
+console.log("sorted:",   sorted);
+console.log("reversed:", reversed);
+
+// toSorted with comparator
+const byLength = fruits.toSorted((a,b) => a.length - b.length);
+console.log("by length:", byLength);
+console.log("original:", fruits); // unchanged!
+
+// toSpliced — remove/insert without mutation
+const arr = [1, 2, 3, 4, 5];
+const spliced = arr.toSpliced(2, 1, 10, 20); // at index 2, remove 1, insert 10,20
+console.log("toSpliced:", spliced);
+console.log("original:", arr); // unchanged!
+
+// with() — replace single element
+const withReplaced = fruits.with(1, "KIWI");
+console.log("with():", withReplaced);
+console.log("original:", fruits); // unchanged!`},
+];
+
+// Build sidebar
+function buildSidebar() {
+  const sb = document.getElementById("sidebar");
+  const groups = {};
+  TOPICS.forEach(t => {
+    if (!groups[t.ver]) groups[t.ver] = [];
+    groups[t.ver].push(t);
+  });
+  Object.entries(groups).forEach(([ver, topics]) => {
+    const label = document.createElement("div");
+    label.className = "sb-section";
+    label.textContent = ver;
+    sb.appendChild(label);
+    topics.forEach(t => {
+      const a = document.createElement("a");
+      a.className = "sb-item";
+      a.href = "#" + t.id;
+      a.innerHTML = `<span class="sb-num">${t.num}</span>${t.title}<span class="sb-badge badge-${t.badge}">${t.ver.replace("ES","")}</span>`;
+      a.addEventListener("click", e => {
+        e.preventDefault();
+        document.getElementById(t.id)?.scrollIntoView({behavior:"smooth", block:"start"});
+        document.querySelectorAll(".sb-item").forEach(i => i.classList.remove("active"));
+        a.classList.add("active");
+      });
+      sb.appendChild(a);
+    });
+  });
+}
+
+// Build topic cards
+function buildTopics() {
+  const container = document.getElementById("mainContent");
+  TOPICS.forEach((t, idx) => {
+    const card = document.createElement("div");
+    card.className = "topic-card";
+    card.id = t.id;
+
+    const badgeMap = {es6:"t-es6", es7:"t-es7", new:"t-new"};
+    const tClass = badgeMap[t.badge] || "t-es6";
+
+    const pointsHTML = t.points?.map(p => `<li>${p}</li>`).join("") || "";
+
+    card.innerHTML = `
+      <div class="topic-header">
+        <span class="topic-num-badge">${t.num}</span>
+        <div>
+          <div class="topic-title">${t.title}</div>
+          <div class="topic-subtitle">${t.desc}</div>
+          <div class="topic-tags">
+            <span class="t-tag ${tClass}">${t.ver}</span>
+          </div>
+        </div>
+      </div>
+      ${pointsHTML ? `<div class="explain-box"><h4>Key Points</h4><ul>${pointsHTML}</ul></div>` : ""}
+      <div class="mini-console" id="mc_${t.id}">
+        <div class="mc-titlebar">
+          <div class="mc-dots"><div class="mc-dot r"></div><div class="mc-dot y"></div><div class="mc-dot g"></div></div>
+          <div class="mc-tabs"><div class="mc-tab active">Console</div></div>
+          <div class="mc-actions">
+            <button class="mc-reset" onclick="resetCode('${t.id}')">↺ Reset</button>
+            <button class="mc-clear" onclick="clearOut('${t.id}')">Clear</button>
+            <button class="mc-run" onclick="runTopic('${t.id}')">▶ Run</button>
+          </div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-editor-pane">
+            <div class="mc-pane-label">EDITOR <span>Ctrl+Enter to run</span></div>
+            <div class="mc-editor-wrap">
+              <div class="mc-linenums" id="ln_${t.id}">1</div>
+              <textarea class="mc-textarea" id="ed_${t.id}"
+                onkeydown="edKey(event,'${t.id}')"
+                oninput="syncLines('${t.id}')"
+                spellcheck="false" autocorrect="off" autocapitalize="off">${t.code}</textarea>
+            </div>
+          </div>
+          <div class="mc-output-pane">
+            <div class="mc-pane-label">OUTPUT <span id="outCount_${t.id}">0 lines</span></div>
+            <div class="mc-output" id="out_${t.id}">
+              <div class="mc-line t-info"><span class="mc-gutter">ℹ</span><span class="mc-content">Click ▶ Run or press Ctrl+Enter</span></div>
+            </div>
+            <div class="mc-repl">
+              <span class="mc-repl-prompt">&gt;</span>
+              <input class="mc-repl-input" id="repl_${t.id}" placeholder="Quick expression…"
+                onkeydown="replKey(event,'${t.id}')" spellcheck="false"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+
+    // Init line numbers
+    syncLines(t.id);
+
+    // Sync scroll for this editor
+    setTimeout(() => {
+      const ta = document.getElementById("ed_" + t.id);
+      const ln = document.getElementById("ln_" + t.id);
+      if (ta && ln) ta.addEventListener("scroll", () => { ln.scrollTop = ta.scrollTop; });
+    }, 0);
+  });
+}
+
+// Store original codes
+const ORIGINAL_CODES = {};
+TOPICS.forEach(t => { ORIGINAL_CODES[t.id] = t.code; });
+
+function resetCode(tid) {
+  const ta = document.getElementById("ed_" + tid);
+  ta.value = ORIGINAL_CODES[tid];
+  syncLines(tid);
+  clearOut(tid);
+  appendOut(tid, "Code reset to original.", "info");
+}
+
+function syncLines(tid) {
+  const ta = document.getElementById("ed_" + tid);
+  const ln = document.getElementById("ln_" + tid);
+  if (!ta || !ln) return;
+  const lines = ta.value.split("\\n").length;
+  ln.textContent = Array.from({length: lines}, (_, i) => i + 1).join("\\n");
+}
+
+function clearOut(tid) {
+  const out = document.getElementById("out_" + tid);
+  if (out) out.innerHTML = "";
+  const cnt = document.getElementById("outCount_" + tid);
+  if (cnt) cnt.textContent = "0 lines";
+}
+
+let lineCount = {};
+function appendOut(tid, content, type = "log", isNode = false) {
+  const out = document.getElementById("out_" + tid);
+  if (!out) return;
+  const line = document.createElement("div");
+  line.className = "mc-line t-" + type;
+  const g = document.createElement("span");
+  g.className = "mc-gutter";
+  g.textContent = type==="error"?"✕":type==="warn"?"⚠":type==="info"?"ℹ":type==="ret"?"←":type==="cmd"?">": " ";
+  const c = document.createElement("span");
+  c.className = "mc-content";
+  c.style.display = "flex";
+  c.style.flexWrap = "wrap";
+  c.style.gap = "5px";
+  c.style.alignItems = "flex-start";
+  if (isNode) {
+    c.appendChild(content);
+  } else {
+    c.textContent = content;
+  }
+  line.appendChild(g);
+  line.appendChild(c);
+  out.appendChild(line);
+  out.scrollTop = out.scrollHeight;
+  lineCount[tid] = (lineCount[tid] || 0) + 1;
+  const cnt = document.getElementById("outCount_" + tid);
+  if (cnt) cnt.textContent = lineCount[tid] + " line" + (lineCount[tid]!==1?"s":"");
+}
+
+// ── VALUE FORMATTER ──
+function fmtVal(v, depth=0, inline=false) {
+  if (v === null)      return mkSpan("ou","null");
+  if (v === undefined) return mkSpan("ou","undefined");
+  if (typeof v === "boolean") return mkSpan("ob", String(v));
+  if (typeof v === "number")  return mkSpan("on", isNaN(v)?"NaN":String(v));
+  if (typeof v === "bigint")  return mkSpan("on", v + "n");
+  if (typeof v === "symbol")  return mkSpan("of", v.toString());
+  if (typeof v === "string") {
+    const s = mkSpan("os", `"${v.length>120?v.slice(0,120)+"…":v}"`);
+    return s;
+  }
+  if (typeof v === "function") return mkSpan("of", `ƒ ${v.name||"anon"}()`);
+  if (v instanceof Error)  { const s=mkSpan("",""); s.style.color="#fca5a5"; s.textContent=`${v.constructor.name}: ${v.message}`; return s; }
+  if (Array.isArray(v))    return buildTree(v, true,  depth, inline);
+  if (v instanceof Map)    { const s=mkSpan("of",""); s.style.color="var(--accent2)"; s.textContent=`Map(${v.size})`; return s; }
+  if (v instanceof Set)    { const s=mkSpan("of",""); s.style.color="var(--accent2)"; s.textContent=`Set(${v.size})`; return s; }
+  if (typeof v === "object") return buildTree(v, false, depth, inline);
+  const s=document.createElement("span"); s.textContent=String(v); return s;
+}
+
+function mkSpan(cls, txt) {
+  const s = document.createElement("span");
+  if (cls) s.className = cls;
+  s.textContent = txt;
+  return s;
+}
+
+function buildTree(val, isArr, depth, inline) {
+  const keys = isArr ? [...val.keys()] : Object.keys(val);
+  const [ob, cb] = isArr ? ["[","]"] : ["{","}"];
+
+  if (depth > 3 || (inline && keys.length > 6)) {
+    return mkSpan("ou", isArr ? `Array(${keys.length})` : "{…}");
+  }
+
+  // Preview line
+  const toggle = document.createElement("button");
+  toggle.className = "obj-toggle";
+
+  function renderPreview() {
+    toggle.innerHTML = "";
+    toggle.appendChild(document.createTextNode(ob));
+    keys.slice(0, isArr?5:3).forEach((k, i) => {
+      if (i > 0) toggle.appendChild(document.createTextNode(", "));
+      if (!isArr) { const kn=mkSpan("ok",String(k)+": "); toggle.appendChild(kn); }
+      toggle.appendChild(fmtVal(val[k], depth+1, true));
+    });
+    if (keys.length > (isArr?5:3)) toggle.appendChild(document.createTextNode(", …"));
+    toggle.appendChild(document.createTextNode(cb));
+    if (isArr) { const l=mkSpan("ou",` (${keys.length})`); toggle.appendChild(l); }
+  }
+  renderPreview();
+
+  const children = document.createElement("div");
+  children.className = "obj-children";
+  let open = false;
+
+  toggle.addEventListener("click", () => {
+    open = !open;
+    children.classList.toggle("open", open);
+    if (open) {
+      children.innerHTML = "";
+      keys.forEach(k => {
+        const row = document.createElement("div");
+        row.style.cssText = "display:flex;gap:4px;align-items:flex-start;padding:1px 0;flex-wrap:wrap";
+        row.appendChild(mkSpan("ok", (isArr?k:k)+": "));
+        row.appendChild(fmtVal(val[k], depth+1, false));
+        children.appendChild(row);
+      });
+      const proto = mkSpan("op2", `[[Prototype]]: ${isArr?"Array":"Object"}`);
+      children.appendChild(proto);
+      toggle.innerHTML = "";
+      toggle.appendChild(document.createTextNode(ob));
+    } else {
+      renderPreview();
+    }
+  });
+
+  const w = document.createElement("div");
+  w.className = "obj-tree";
+  w.appendChild(toggle);
+  w.appendChild(children);
+  return w;
+}
+
+function renderVals(tid, args, type) {
+  const wrap = document.createElement("div");
+  wrap.style.cssText = "display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start";
+  args.forEach(v => wrap.appendChild(fmtVal(v, 0, false)));
+  appendOut(tid, wrap, type, true);
+}
+
+// ── RUN ──
+const replHistories = {};
+
+function runTopic(tid) {
+  const code = document.getElementById("ed_" + tid)?.value;
+  if (!code?.trim()) return;
+  clearOut(tid);
+  lineCount[tid] = 0;
+
+  const oLog  = console.log, oWarn = console.warn;
+  const oErr  = console.error, oInfo = console.info;
+  console.log   = (...a) => { oLog(...a);  renderVals(tid, a, "log");  };
+  console.warn  = (...a) => { oWarn(...a); renderVals(tid, a, "warn"); };
+  console.error = (...a) => { oErr(...a);  renderVals(tid, a, "error");};
+  console.info  = (...a) => { oInfo(...a); renderVals(tid, a, "info"); };
+
+  try {
+    const res = eval(code);
+    if (res !== undefined) renderVals(tid, [res], "ret");
+  } catch(e) {
+    renderVals(tid, [e], "error");
+  } finally {
+    console.log=oLog; console.warn=oWarn; console.error=oErr; console.info=oInfo;
+  }
+}
+
+function replKey(e, tid) {
+  if (e.key !== "Enter") return;
+  const inp = document.getElementById("repl_" + tid);
+  const code = inp.value.trim(); if (!code) return;
+  if (!replHistories[tid]) replHistories[tid] = [];
+  replHistories[tid].unshift(code);
+
+  appendOut(tid, "> " + code, "cmd");
+
+  const oLog=console.log, oWarn=console.warn, oErr=console.error;
+  console.log   = (...a) => { oLog(...a);  renderVals(tid, a, "log");  };
+  console.warn  = (...a) => { oWarn(...a); renderVals(tid, a, "warn"); };
+  console.error = (...a) => { oErr(...a);  renderVals(tid, a, "error");};
+  try {
+    const res = eval(code);
+    renderVals(tid, [res], "ret");
+  } catch(e) {
+    renderVals(tid, [e], "error");
+  } finally {
+    console.log=oLog; console.warn=oWarn; console.error=oErr;
+  }
+  inp.value = "";
+}
+
+function edKey(e, tid) {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); runTopic(tid); return; }
+  if (e.key === "Tab") {
+    e.preventDefault();
+    const t = e.target, s = t.selectionStart;
+    t.value = t.value.slice(0,s) + "  " + t.value.slice(t.selectionEnd);
+    t.selectionStart = t.selectionEnd = s + 2;
+    syncLines(tid);
+  }
+}
+
+// ── CURSOR ──
+const cursor = document.getElementById("cursor");
+const ring   = document.getElementById("cursor-ring");
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener("mousemove", e => {
+  mx=e.clientX; my=e.clientY;
+  cursor.style.transform=`translate(${mx-6}px,${my-6}px)`;
+});
+(function animRing(){
+  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+  ring.style.transform=`translate(${rx-18}px,${ry-18}px)`;
+  requestAnimationFrame(animRing);
+})();
+
+// ── NAV ──
+window.addEventListener("scroll", () =>
+  document.getElementById("navbar").classList.toggle("scrolled", scrollY>50));
+
+// ── INTERSECTION OBSERVER ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add("visible");
+      // highlight sidebar
+      const id = e.target.id;
+      document.querySelectorAll(".sb-item").forEach(s => {
+        s.classList.toggle("active", s.getAttribute("href") === "#" + id);
+      });
+    }
+  });
+}, { threshold: 0.05, rootMargin: "-80px 0px -60% 0px" });
+
+// ── PARTICLES ──
+const pc = document.getElementById("particles");
+for (let i=0;i<16;i++){
+  const p=document.createElement("div");
+  p.className="particle";
+  p.style.cssText=`left:${Math.random()*100}%;--dur:${7+Math.random()*10}s;--delay:${Math.random()*10}s;--drift:${(Math.random()-.5)*80}px`;
+  pc.appendChild(p);
+}
+
+// ── INIT ──
+buildSidebar();
+buildTopics();
+
+// After building, observe all topic cards
+document.querySelectorAll(".topic-card").forEach(c => obs.observe(c));
+</script>
+</body>
+</html>
