@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHP Interview Notebook</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #fdf9f0;
+    --paper-dark: #f5eedc;
+    --ink: #2c1810;
+    --ink-light: #5c4033;
+    --red: #c0392b;
+    --blue: #1a5276;
+    --green: #1e8449;
+    --orange: #d35400;
+    --purple: #6c3483;
+    --highlight: #fff9c4;
+    --highlight2: #d5f5e3;
+    --highlight3: #d6eaf8;
+    --line: #c8b99a;
+    --margin-line: #e8a0a0;
+    --ring: #888;
+    --shadow: rgba(0,0,0,0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #2d2d2d;
+    background-image: 
+      radial-gradient(ellipse at 20% 50%, #3a3a3a 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, #333 0%, transparent 50%);
+    min-height: 100vh;
+    font-family: 'Lora', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 10px 40px;
+  }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    width: 100%;
+    max-width: 860px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .notebook-title {
+    font-family: 'Caveat', cursive;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f0e6cc;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    letter-spacing: 1px;
+  }
+
+  .nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'Caveat', cursive;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    padding: 8px 18px;
+    border-radius: 6px;
+    transition: all 0.18s;
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.3);
+  }
+
+  .btn-nav {
+    background: #f0e6cc;
+    color: #2c1810;
+  }
+  .btn-nav:hover { background: #fff; transform: translateY(-1px); }
+  .btn-nav:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  .page-indicator {
+    font-family: 'Caveat', cursive;
+    font-size: 1.15rem;
+    color: #f0e6cc;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  /* ── TOC BUTTON ── */
+  .btn-toc {
+    background: #c0392b;
+    color: #fff;
+  }
+  .btn-toc:hover { background: #e74c3c; transform: translateY(-1px); }
+
+  /* ── NOTEBOOK ── */
+  .notebook {
+    width: 100%;
+    max-width: 860px;
+    position: relative;
+  }
+
+  /* Rings */
+  .rings {
+    position: absolute;
+    left: 50%;
+    top: -18px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 70px;
+    z-index: 20;
+  }
+  .ring {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #bbb, #777);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.4);
+    border: 2px solid #999;
+  }
+
+  /* Page */
+  .page {
+    display: none;
+    background: var(--paper);
+    border-radius: 4px 4px 6px 6px;
+    box-shadow: 
+      0 4px 6px var(--shadow),
+      0 12px 30px rgba(0,0,0,0.25),
+      inset 0 0 0 1px rgba(200,185,154,0.4);
+    min-height: 780px;
+    position: relative;
+    overflow: hidden;
+    animation: pageFlip 0.35s ease;
+  }
+  .page.active { display: block; }
+
+  @keyframes pageFlip {
+    from { opacity: 0; transform: rotateY(-8deg) translateX(-20px); }
+    to   { opacity: 1; transform: rotateY(0deg) translateX(0); }
+  }
+
+  /* Lined background */
+  .page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 31px,
+      var(--line) 31px,
+      var(--line) 32px
+    );
+    background-position: 0 56px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Margin line */
+  .page::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 72px;
+    width: 2px;
+    background: var(--margin-line);
+    opacity: 0.7;
+    z-index: 1;
+  }
+
+  /* Page header strip */
+  .page-header {
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(135deg, var(--blue) 0%, #154360 100%);
+    padding: 20px 30px 16px 90px;
+    margin-bottom: 8px;
+    border-bottom: 3px solid #1a3a52;
+  }
+
+  .page-num-badge {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--red);
+    color: #fff;
+    font-family: 'Caveat', cursive;
+    font-size: 1rem;
+    font-weight: 700;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  .page-title {
+    font-family: 'Caveat', cursive;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f0e6cc;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .page-subtitle {
+    font-family: 'Caveat', cursive;
+    font-size: 1.1rem;
+    color: #a8c6e8;
+  }
+
+  /* Priority badge */
+  .priority {
+    display: inline-block;
+    font-family: 'Caveat', cursive;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+  .p-high { background: #c0392b; color: #fff; }
+  .p-med  { background: #d35400; color: #fff; }
+  .p-bonus{ background: #1e8449; color: #fff; }
+
+  /* Content area */
+  .page-content {
+    position: relative;
+    z-index: 2;
+    padding: 10px 30px 30px 90px;
+  }
+
+  /* Section heading */
+  .section {
+    margin: 18px 0 8px;
+  }
+
+  .section-title {
+    font-family: 'Caveat', cursive;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--blue);
+    border-bottom: 2px dashed var(--blue);
+    padding-bottom: 2px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title .icon { font-size: 1.2rem; }
+
+  /* Concept cards */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 6px;
+    padding: 12px 14px;
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(0,0,0,0.06);
+    border-left: 4px solid var(--blue);
+    transition: transform 0.15s;
+  }
+  .card:hover { transform: translateY(-2px); }
+  .card.red   { border-left-color: var(--red); }
+  .card.green { border-left-color: var(--green); }
+  .card.orange{ border-left-color: var(--orange); }
+  .card.purple{ border-left-color: var(--purple); }
+
+  .card-title {
+    font-family: 'Caveat', cursive;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 5px;
+  }
+
+  .card-body {
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    line-height: 1.55;
+  }
+
+  /* Code block */
+  .code-block {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 10px 0;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .code-block .kw  { color: #c792ea; }
+  .code-block .fn  { color: #82aaff; }
+  .code-block .str { color: #c3e88d; }
+  .code-block .cm  { color: #546e7a; font-style: italic; }
+  .code-block .num { color: #f78c6c; }
+  .code-block .var { color: #89ddff; }
+  .code-block .plain { color: #cdd3de; }
+
+  /* Highlight note */
+  .note {
+    background: var(--highlight);
+    border-left: 4px solid #f1c40f;
+    border-radius: 4px;
+    padding: 8px 14px;
+    margin: 10px 0;
+    font-size: 0.88rem;
+    color: var(--ink);
+    font-style: italic;
+  }
+  .note.blue  { background: var(--highlight3); border-color: #2980b9; }
+  .note.green { background: var(--highlight2); border-color: var(--green); }
+
+  /* Table */
+  .nb-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 0.83rem;
+  }
+  .nb-table th {
+    background: var(--blue);
+    color: #fff;
+    padding: 7px 12px;
+    font-family: 'Caveat', cursive;
+    font-size: 1rem;
+    text-align: left;
+  }
+  .nb-table td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+  }
+  .nb-table tr:nth-child(even) td { background: #f5eedc88; }
+
+  /* Bullet list */
+  .nb-list {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 12px;
+  }
+  .nb-list li {
+    font-size: 0.87rem;
+    color: var(--ink-light);
+    padding: 3px 0 3px 22px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .nb-list li::before {
+    content: '✦';
+    position: absolute;
+    left: 0;
+    color: var(--red);
+    font-size: 0.7rem;
+    top: 5px;
+  }
+
+  /* Interview Q */
+  .iq {
+    background: linear-gradient(135deg, #fdfaf5, #fff);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    box-shadow: 1px 2px 5px rgba(0,0,0,0.07);
+  }
+  .iq-q {
+    font-family: 'Caveat', cursive;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 5px;
+  }
+  .iq-a {
+    font-size: 0.83rem;
+    color: var(--ink-light);
+    line-height: 1.55;
+  }
+
+  /* Two-col layout */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:600px){ .two-col { grid-template-columns: 1fr; } }
+
+  /* TOC overlay */
+  .toc-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .toc-overlay.open { display: flex; }
+
+  .toc-box {
+    background: var(--paper);
+    border-radius: 10px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .toc-box h2 {
+    font-family: 'Caveat', cursive;
+    font-size: 2rem;
+    color: var(--blue);
+    margin-bottom: 16px;
+    border-bottom: 2px dashed var(--line);
+    padding-bottom: 8px;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media(max-width:480px){ .toc-grid { grid-template-columns: 1fr; } }
+
+  .toc-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid #ddd;
+    background: #fff;
+  }
+  .toc-item:hover { background: var(--highlight3); border-color: var(--blue); }
+  .toc-num {
+    font-family: 'Caveat', cursive;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--red);
+    min-width: 24px;
+  }
+  .toc-name {
+    font-family: 'Caveat', cursive;
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+  .toc-close {
+    position: absolute;
+    top: 12px; right: 16px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    font-family: 'Caveat', cursive;
+  }
+  .toc-box { position: relative; }
+
+  /* Page footer */
+  .page-footer {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    font-family: 'Caveat', cursive;
+    font-size: 0.95rem;
+    color: #bbb;
+    z-index: 2;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    width: 100%;
+    max-width: 860px;
+    height: 6px;
+    background: #555;
+    border-radius: 3px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #c0392b, #e74c3c);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="notebook-title">📒 PHP Interview Notebook</div>
+  <div class="nav-controls">
+    <button class="btn btn-toc" onclick="toggleTOC()">📑 Contents</button>
+    <button class="btn btn-nav" id="prevBtn" onclick="changePage(-1)" disabled>◀ Prev</button>
+    <span class="page-indicator" id="pageIndicator">1 / 12</span>
+    <button class="btn btn-nav" id="nextBtn" onclick="changePage(1)">Next ▶</button>
+  </div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:8.3%"></div></div>
+
+<div class="notebook">
+  <div class="rings">
+    <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+    <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+    <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+  </div>
+
+  <!-- ═══════════════ PAGE 1: Core PHP ═══════════════ -->
+  <div class="page active" id="page-1">
+    <div class="page-header">
+      <div class="page-num-badge">01</div>
+      <div class="page-title">Core PHP Basics <span class="priority p-high">🔴 Must Know</span></div>
+      <div class="page-subtitle">Fundamentals every PHP developer must master</div>
+    </div>
+    <div class="page-content">
+
+      <div class="section">
+        <div class="section-title"><span class="icon">⚡</span> Key Comparisons</div>
+        <table class="nb-table">
+          <tr><th>Operator</th><th>== (Loose)</th><th>=== (Strict)</th></tr>
+          <tr><td><code>0 == "a"</code></td><td>✅ true</td><td>❌ false</td></tr>
+          <tr><td><code>"1" == 1</code></td><td>✅ true</td><td>❌ false</td></tr>
+          <tr><td><code>null == false</code></td><td>✅ true</td><td>❌ false</td></tr>
+        </table>
+        <div class="note">⭐ Interview Tip: Always use <strong>===</strong> in production — it checks both value AND type!</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🔍</span> isset() vs empty() vs is_null()</div>
+        <table class="nb-table">
+          <tr><th>Function</th><th>Returns true when</th></tr>
+          <tr><td><code>isset($x)</code></td><td>Variable exists and is NOT null</td></tr>
+          <tr><td><code>empty($x)</code></td><td>Variable is "", 0, null, false, [], "0"</td></tr>
+          <tr><td><code>is_null($x)</code></td><td>Variable is exactly null</td></tr>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">📂</span> Include vs Require</div>
+        <div class="cards">
+          <div class="card red"><div class="card-title">require</div><div class="card-body">Stops execution with Fatal Error if file not found. Use for critical files.</div></div>
+          <div class="card"><div class="card-title">include</div><div class="card-body">Shows Warning but continues execution if file not found. Use for optional files.</div></div>
+          <div class="card red"><div class="card-title">require_once</div><div class="card-body">Same as require but includes file only once — prevents duplicate declarations.</div></div>
+          <div class="card"><div class="card-title">include_once</div><div class="card-body">Same as include but only once — safe for repeated calls.</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">💻</span> Data Types</div>
+        <div class="code-block">
+<span class="cm">// PHP Data Types</span>
+<span class="var">$int</span>   = <span class="num">42</span>;              <span class="cm">// Integer</span>
+<span class="var">$float</span> = <span class="num">3.14</span>;           <span class="cm">// Float</span>
+<span class="var">$str</span>   = <span class="str">"Hello PHP"</span>;    <span class="cm">// String</span>
+<span class="var">$bool</span>  = <span class="kw">true</span>;           <span class="cm">// Boolean</span>
+<span class="var">$null</span>  = <span class="kw">null</span>;           <span class="cm">// NULL</span>
+<span class="var">$arr</span>   = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>];      <span class="cm">// Array</span>
+<span class="var">$obj</span>   = <span class="kw">new</span> <span class="fn">stdClass</span>(); <span class="cm">// Object</span>
+
+<span class="cm">// Type casting</span>
+<span class="var">$x</span> = (<span class="kw">int</span>)<span class="str">"42abc"</span>;  <span class="cm">// → 42</span>
+<span class="var">$y</span> = (<span class="kw">bool</span>)<span class="str">""</span>;      <span class="cm">// → false</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • Core Basics</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 2: OOP ═══════════════ -->
+  <div class="page" id="page-2">
+    <div class="page-header">
+      <div class="page-num-badge">02</div>
+      <div class="page-title">OOP Concepts <span class="priority p-high">🔴 Most Asked</span></div>
+      <div class="page-subtitle">Object-Oriented Programming — the heart of PHP interviews</div>
+    </div>
+    <div class="page-content">
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🏛️</span> Interface vs Abstract Class</div>
+        <table class="nb-table">
+          <tr><th>Feature</th><th>Interface</th><th>Abstract Class</th></tr>
+          <tr><td>Methods</td><td>Only declarations</td><td>Can have body</td></tr>
+          <tr><td>Properties</td><td>Constants only</td><td>Any properties</td></tr>
+          <tr><td>Multiple</td><td>✅ Yes</td><td>❌ Single only</td></tr>
+          <tr><td>Constructor</td><td>❌ No</td><td>✅ Yes</td></tr>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">✨</span> Magic Methods</div>
+        <div class="cards">
+          <div class="card purple"><div class="card-title">__construct()</div><div class="card-body">Called when object is created (new Class())</div></div>
+          <div class="card purple"><div class="card-title">__destruct()</div><div class="card-body">Called when object is destroyed or script ends</div></div>
+          <div class="card purple"><div class="card-title">__get() / __set()</div><div class="card-body">Called when accessing undefined/inaccessible properties</div></div>
+          <div class="card purple"><div class="card-title">__toString()</div><div class="card-body">Called when object is used as string: echo $obj</div></div>
+          <div class="card purple"><div class="card-title">__call()</div><div class="card-body">Called when invoking inaccessible methods</div></div>
+          <div class="card purple"><div class="card-title">__clone()</div><div class="card-body">Called when object is cloned with clone keyword</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🎭</span> Traits — Reuse Without Inheritance</div>
+        <div class="code-block">
+<span class="kw">trait</span> <span class="fn">Greetable</span> {
+  <span class="kw">public function</span> <span class="fn">greet</span>() {
+    <span class="kw">return</span> <span class="str">"Hello, I am "</span> . <span class="var">$this</span>-><span class="plain">name</span>;
+  }
+}
+
+<span class="kw">class</span> <span class="fn">User</span> {
+  <span class="kw">use</span> <span class="fn">Greetable</span>; <span class="cm">// ← Inject trait</span>
+  <span class="kw">public</span> <span class="var">$name</span> = <span class="str">"Alice"</span>;
+}
+
+<span class="var">$u</span> = <span class="kw">new</span> <span class="fn">User</span>();
+<span class="kw">echo</span> <span class="var">$u</span>-><span class="fn">greet</span>(); <span class="cm">// Hello, I am Alice</span>
+        </div>
+        <div class="note green">✅ Traits solve the diamond problem — a class can use multiple traits!</div>
+      </div>
+
+      <div class="iq">
+        <div class="iq-q">❓ Q: What is the difference between static and instance methods?</div>
+        <div class="iq-a"><strong>Static</strong> methods belong to the CLASS and are called with <code>ClassName::method()</code>. They cannot access <code>$this</code>. <strong>Instance</strong> methods belong to an OBJECT and are called with <code>$obj->method()</code>. They can access <code>$this</code>.</div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • OOP Concepts</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 3: Database ═══════════════ -->
+  <div class="page" id="page-3">
+    <div class="page-header">
+      <div class="page-num-badge">03</div>
+      <div class="page-title">Database & PDO <span class="priority p-high">🔴 Must Know</span></div>
+      <div class="page-subtitle">PDO, MySQLi, Prepared Statements & SQL</div>
+    </div>
+    <div class="page-content">
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🔌</span> PDO vs MySQLi</div>
+        <table class="nb-table">
+          <tr><th>Feature</th><th>PDO</th><th>MySQLi</th></tr>
+          <tr><td>Databases</td><td>12+ databases</td><td>MySQL only</td></tr>
+          <tr><td>Named params</td><td>✅ :name</td><td>❌ ? only</td></tr>
+          <tr><td>OOP Style</td><td>✅ Yes</td><td>✅ Yes</td></tr>
+          <tr><td>Recommended</td><td>✅ Preferred</td><td>For MySQL only</td></tr>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🛡️</span> Prepared Statements (Prevent SQL Injection)</div>
+        <div class="code-block">
+<span class="cm">// ❌ DANGEROUS — SQL Injection risk!</span>
+<span class="var">$sql</span> = <span class="str">"SELECT * FROM users WHERE id = <span class="var">$_GET</span>[id]"</span>;
+
+<span class="cm">// ✅ SAFE — Prepared Statement with PDO</span>
+<span class="var">$pdo</span> = <span class="kw">new</span> <span class="fn">PDO</span>(<span class="str">"mysql:host=localhost;dbname=mydb"</span>, <span class="var">$user</span>, <span class="var">$pass</span>);
+
+<span class="var">$stmt</span> = <span class="var">$pdo</span>-><span class="fn">prepare</span>(<span class="str">"SELECT * FROM users WHERE id = :id"</span>);
+<span class="var">$stmt</span>-><span class="fn">bindParam</span>(<span class="str">':id'</span>, <span class="var">$_GET</span>[<span class="str">'id'</span>], <span class="fn">PDO</span>::<span class="plain">PARAM_INT</span>);
+<span class="var">$stmt</span>-><span class="fn">execute</span>();
+<span class="var">$user</span> = <span class="var">$stmt</span>-><span class="fn">fetch</span>(<span class="fn">PDO</span>::<span class="plain">FETCH_ASSOC</span>);
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">📊</span> CRUD Operations</div>
+        <div class="code-block">
+<span class="cm">// CREATE</span>
+<span class="var">$stmt</span> = <span class="var">$pdo</span>-><span class="fn">prepare</span>(<span class="str">"INSERT INTO users (name, email) VALUES (:n, :e)"</span>);
+<span class="var">$stmt</span>-><span class="fn">execute</span>([<span class="str">':n'</span> => <span class="str">'Alice'</span>, <span class="str">':e'</span> => <span class="str">'alice@ex.com'</span>]);
+
+<span class="cm">// READ</span>
+<span class="var">$rows</span> = <span class="var">$pdo</span>-><span class="fn">query</span>(<span class="str">"SELECT * FROM users"</span>)-><span class="fn">fetchAll</span>();
+
+<span class="cm">// UPDATE</span>
+<span class="var">$pdo</span>-><span class="fn">prepare</span>(<span class="str">"UPDATE users SET name=:n WHERE id=:id"</span>)-><span class="fn">execute</span>([...]);
+
+<span class="cm">// DELETE</span>
+<span class="var">$pdo</span>-><span class="fn">prepare</span>(<span class="str">"DELETE FROM users WHERE id=:id"</span>)-><span class="fn">execute</span>([<span class="str">':id'</span> => <span class="num">5</span>]);
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🔗</span> SQL Joins</div>
+        <div class="cards">
+          <div class="card"><div class="card-title">INNER JOIN</div><div class="card-body">Returns rows matching in BOTH tables</div></div>
+          <div class="card green"><div class="card-title">LEFT JOIN</div><div class="card-body">All rows from LEFT + matching from right (NULL if no match)</div></div>
+          <div class="card orange"><div class="card-title">RIGHT JOIN</div><div class="card-body">All rows from RIGHT + matching from left</div></div>
+          <div class="card red"><div class="card-title">FULL JOIN</div><div class="card-body">All rows from both tables regardless of match</div></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • Database & PDO</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 4: Security ═══════════════ -->
+  <div class="page" id="page-4">
+    <div class="page-header">
+      <div class="page-num-badge">04</div>
+      <div class="page-title">Security <span class="priority p-high">🔴 Must Know</span></div>
+      <div class="page-subtitle">SQL Injection, XSS, CSRF & Password Hashing</div>
+    </div>
+    <div class="page-content">
+
+      <div class="section">
+        <div class="section-title"><span class="icon">💉</span> SQL Injection Prevention</div>
+        <div class="note">Never trust user input! Always use prepared statements or parameterized queries.</div>
+        <div class="code-block">
+<span class="cm">// ✅ Prevention with PDO Prepared Statement</span>
+<span class="var">$stmt</span> = <span class="var">$pdo</span>-><span class="fn">prepare</span>(<span class="str">"SELECT * FROM users WHERE email=?"</span>);
+<span class="var">$stmt</span>-><span class="fn">execute</span>([<span class="var">$_POST</span>[<span class="str">'email'</span>]]);
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🖥️</span> XSS (Cross-Site Scripting) Prevention</div>
+        <div class="code-block">
+<span class="cm">// ❌ Vulnerable — outputs raw HTML</span>
+<span class="kw">echo</span> <span class="var">$_GET</span>[<span class="str">'name'</span>];
+
+<span class="cm">// ✅ Safe — escape HTML entities</span>
+<span class="kw">echo</span> <span class="fn">htmlspecialchars</span>(<span class="var">$_GET</span>[<span class="str">'name'</span>], <span class="plain">ENT_QUOTES</span>, <span class="str">'UTF-8'</span>);
+
+<span class="cm">// Also sanitize inputs</span>
+<span class="var">$clean</span> = <span class="fn">filter_input</span>(<span class="plain">INPUT_GET</span>, <span class="str">'name'</span>, <span class="plain">FILTER_SANITIZE_STRING</span>);
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🔐</span> Password Hashing</div>
+        <div class="code-block">
+<span class="cm">// ✅ Hash password before storing</span>
+<span class="var">$hash</span> = <span class="fn">password_hash</span>(<span class="var">$password</span>, <span class="plain">PASSWORD_BCRYPT</span>);
+
+<span class="cm">// ✅ Verify on login</span>
+<span class="kw">if</span> (<span class="fn">password_verify</span>(<span class="var">$inputPassword</span>, <span class="var">$hash</span>)) {
+  <span class="kw">echo</span> <span class="str">"Login successful!"</span>;
+}
+
+<span class="cm">// ❌ NEVER do this:</span>
+<span class="var">$hash</span> = <span class="fn">md5</span>(<span class="var">$password</span>);  <span class="cm">// md5/sha1 are NOT secure for passwords!</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🛡️</span> CSRF Protection</div>
+        <div class="code-block">
+<span class="cm">// Generate token and store in session</span>
+<span class="var">$_SESSION</span>[<span class="str">'csrf'</span>] = <span class="fn">bin2hex</span>(<span class="fn">random_bytes</span>(<span class="num">32</span>));
+
+<span class="cm">// In form:</span>
+<span class="plain">&lt;input type="hidden" name="csrf" value="&lt;?= $_SESSION['csrf'] ?&gt;"&gt;</span>
+
+<span class="cm">// On submit — verify token:</span>
+<span class="kw">if</span> (!<span class="fn">hash_equals</span>(<span class="var">$_SESSION</span>[<span class="str">'csrf'</span>], <span class="var">$_POST</span>[<span class="str">'csrf'</span>])) {
+  <span class="fn">die</span>(<span class="str">'CSRF attack detected!'</span>);
+}
+        </div>
+        <div class="note">⭐ Use <code>hash_equals()</code> instead of <code>==</code> to prevent timing attacks!</div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • Security</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 5: Sessions & Cookies ═══════════════ -->
+  <div class="page" id="page-5">
+    <div class="page-header">
+      <div class="page-num-badge">05</div>
+      <div class="page-title">Sessions & Cookies <span class="priority p-med">🟠 Important</span></div>
+      <div class="page-subtitle">State management between HTTP requests</div>
+    </div>
+    <div class="page-content">
+
+      <div class="section">
+        <div class="section-title"><span class="icon">⚖️</span> Session vs Cookie — Key Differences</div>
+        <table class="nb-table">
+          <tr><th>Feature</th><th>Session</th><th>Cookie</th></tr>
+          <tr><td>Storage</td><td>Server-side</td><td>Client-side (browser)</td></tr>
+          <tr><td>Security</td><td>More secure</td><td>Less secure (visible)</td></tr>
+          <tr><td>Lifespan</td><td>Until browser closes</td><td>Set expiry time</td></tr>
+          <tr><td>Size limit</td><td>No hard limit</td><td>~4KB per cookie</td></tr>
+          <tr><td>Speed</td><td>Slower (server I/O)</td><td>Faster</td></tr>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🗂️</span> Sessions in PHP</div>
+        <div class="code-block">
+<span class="cm">// Start session (must be before any output!)</span>
+<span class="fn">session_start</span>();
+
+<span class="cm">// Store data</span>
+<span class="var">$_SESSION</span>[<span class="str">'user_id'</span>] = <span class="num">42</span>;
+<span class="var">$_SESSION</span>[<span class="str">'username'</span>] = <span class="str">'Alice'</span>;
+
+<span class="cm">// Read data</span>
+<span class="kw">echo</span> <span class="var">$_SESSION</span>[<span class="str">'username'</span>]; <span class="cm">// Alice</span>
+
+<span class="cm">// Destroy session (logout)</span>
+<span class="fn">session_destroy</span>();
+<span class="fn">session_unset</span>(); <span class="cm">// Clear all session variables</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🍪</span> Cookies in PHP</div>
+        <div class="code-block">
+<span class="cm">// Set cookie (before any output!)</span>
+<span class="fn">setcookie</span>(
+  <span class="str">'remember_token'</span>,    <span class="cm">// name</span>
+  <span class="str">'abc123xyz'</span>,          <span class="cm">// value</span>
+  <span class="fn">time</span>() + (<span class="num">86400</span> * <span class="num">30</span>), <span class="cm">// expires in 30 days</span>
+  <span class="str">'/'</span>,                  <span class="cm">// path</span>
+  <span class="str">''</span>,                   <span class="cm">// domain</span>
+  <span class="kw">true</span>,                 <span class="cm">// secure (HTTPS only)</span>
+  <span class="kw">true</span>                  <span class="cm">// httpOnly (no JS access)</span>
+);
+
+<span class="cm">// Read cookie</span>
+<span class="kw">echo</span> <span class="var">$_COOKIE</span>[<span class="str">'remember_token'</span>];
+
+<span class="cm">// Delete cookie — set past expiry</span>
+<span class="fn">setcookie</span>(<span class="str">'remember_token'</span>, <span class="str">''</span>, <span class="fn">time</span>() - <span class="num">3600</span>);
+        </div>
+        <div class="note blue">🔒 Always set <strong>httpOnly=true</strong> and <strong>secure=true</strong> for sensitive cookies!</div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • Sessions & Cookies</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 6: Error Handling ═══════════════ -->
+  <div class="page" id="page-6">
+    <div class="page-header">
+      <div class="page-num-badge">06</div>
+      <div class="page-title">Error Handling <span class="priority p-med">🟠 Important</span></div>
+      <div class="page-subtitle">Exceptions, try-catch, custom errors</div>
+    </div>
+    <div class="page-content">
+
+      <div class="section">
+        <div class="section-title"><span class="icon">⚠️</span> PHP Error Types</div>
+        <div class="cards">
+          <div class="card red"><div class="card-title">Fatal Error</div><div class="card-body">Stops script execution immediately. E.g., calling undefined function.</div></div>
+          <div class="card orange"><div class="card-title">Warning</div><div class="card-body">Script continues but something is wrong. E.g., include missing file.</div></div>
+          <div class="card"><div class="card-title">Notice</div><div class="card-body">Minor issue, script continues. E.g., accessing undefined variable.</div></div>
+          <div class="card green"><div class="card-title">Parse Error</div><div class="card-body">Syntax error found during compilation. Script won't run at all.</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🎯</span> Try / Catch / Finally</div>
+        <div class="code-block">
+<span class="kw">try</span> {
+  <span class="kw">if</span> (<span class="var">$age</span> < <span class="num">0</span>) {
+    <span class="kw">throw new</span> <span class="fn">InvalidArgumentException</span>(<span class="str">"Age cannot be negative"</span>);
+  }
+  <span class="kw">echo</span> <span class="str">"Valid age: "</span> . <span class="var">$age</span>;
+
+} <span class="kw">catch</span> (<span class="fn">InvalidArgumentException</span> <span class="var">$e</span>) {
+  <span class="kw">echo</span> <span class="str">"Caught: "</span> . <span class="var">$e</span>-><span class="fn">getMessage</span>();
+
+} <span class="kw">catch</span> (<span class="fn">Exception</span> <span class="var">$e</span>) {
+  <span class="kw">echo</span> <span class="str">"General error: "</span> . <span class="var">$e</span>-><span class="fn">getMessage</span>();
+
+} <span class="kw">finally</span> {
+  <span class="kw">echo</span> <span class="str">"This ALWAYS runs!"</span>; <span class="cm">// Cleanup code here</span>
+}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🏗️</span> Custom Exception</div>
+        <div class="code-block">
+<span class="kw">class</span> <span class="fn">DatabaseException</span> <span class="kw">extends</span> <span class="fn">RuntimeException</span> {
+  <span class="kw">public function</span> <span class="fn">__construct</span>(<span class="var">$msg</span>, <span class="var">$code</span> = <span class="num">0</span>) {
+    <span class="kw">parent</span>::<span class="fn">__construct</span>(<span class="str">"DB Error: "</span> . <span class="var">$msg</span>, <span class="var">$code</span>);
+    <span class="cm">// Log to file, notify admin, etc.</span>
+  }
+}
+
+<span class="kw">throw new</span> <span class="fn">DatabaseException</span>(<span class="str">"Connection failed"</span>, <span class="num">500</span>);
+        </div>
+      </div>
+
+      <div class="iq">
+        <div class="iq-q">❓ Q: What is the difference between Exception and Error in PHP 7+?</div>
+        <div class="iq-a"><strong>Exception</strong> is for application-level errors you expect. <strong>Error</strong> is for engine-level failures (type errors, parse errors). Both implement <code>Throwable</code> interface — you can catch both with <code>catch(Throwable $t)</code>.</div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • Error Handling</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 7: Arrays & Functions ═══════════════ -->
+  <div class="page" id="page-7">
+    <div class="page-header">
+      <div class="page-num-badge">07</div>
+      <div class="page-title">Arrays & Functions <span class="priority p-med">🟠 Important</span></div>
+      <div class="page-subtitle">Array functions, closures, and arrow functions</div>
+    </div>
+    <div class="page-content">
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🗃️</span> Key Array Functions</div>
+        <div class="code-block">
+<span class="var">$nums</span> = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>];
+
+<span class="cm">// array_map — transform each element</span>
+<span class="var">$doubled</span> = <span class="fn">array_map</span>(<span class="kw">fn</span>(<span class="var">$n</span>) => <span class="var">$n</span> * <span class="num">2</span>, <span class="var">$nums</span>); <span class="cm">// [2,4,6,8,10]</span>
+
+<span class="cm">// array_filter — keep matching elements</span>
+<span class="var">$evens</span> = <span class="fn">array_filter</span>(<span class="var">$nums</span>, <span class="kw">fn</span>(<span class="var">$n</span>) => <span class="var">$n</span> % <span class="num">2</span> === <span class="num">0</span>); <span class="cm">// [2,4]</span>
+
+<span class="cm">// array_reduce — reduce to single value</span>
+<span class="var">$sum</span> = <span class="fn">array_reduce</span>(<span class="var">$nums</span>, <span class="kw">fn</span>(<span class="var">$carry</span>, <span class="var">$item</span>) => <span class="var">$carry</span> + <span class="var">$item</span>, <span class="num">0</span>); <span class="cm">// 15</span>
+
+<span class="cm">// usort — custom sorting</span>
+<span class="fn">usort</span>(<span class="var">$arr</span>, <span class="kw">fn</span>(<span class="var">$a</span>, <span class="var">$b</span>) => <span class="var">$a</span>[<span class="str">'age'</span>] <=> <span class="var">$b</span>[<span class="str">'age'</span>]);
+
+<span class="cm">// Other useful functions</span>
+<span class="fn">array_unique</span>(<span class="var">$arr</span>);     <span class="cm">// remove duplicates</span>
+<span class="fn">array_merge</span>(<span class="var">$a</span>, <span class="var">$b</span>);    <span class="cm">// merge arrays</span>
+<span class="fn">in_array</span>(<span class="num">3</span>, <span class="var">$nums</span>);      <span class="cm">// check if value exists</span>
+<span class="fn">array_key_exists</span>(<span class="str">'k'</span>, <span class="var">$arr</span>); <span class="cm">// check if key exists</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🔮</span> Closures & Arrow Functions</div>
+        <div class="code-block">
+<span class="cm">// Closure (anonymous function)</span>
+<span class="var">$multiply</span> = <span class="kw">function</span>(<span class="var">$x</span>, <span class="var">$y</span>) {
+  <span class="kw">return</span> <span class="var">$x</span> * <span class="var">$y</span>;
+};
+
+<span class="cm">// Use 'use' to capture outer variables</span>
+<span class="var">$factor</span> = <span class="num">3</span>;
+<span class="var">$triple</span> = <span class="kw">function</span>(<span class="var">$n</span>) <span class="kw">use</span> (<span class="var">$factor</span>) {
+  <span class="kw">return</span> <span class="var">$n</span> * <span class="var">$factor</span>;
+};
+
+<span class="cm">// Arrow function (PHP 7.4+) — auto-captures $factor</span>
+<span class="var">$triple</span> = <span class="kw">fn</span>(<span class="var">$n</span>) => <span class="var">$n</span> * <span class="var">$factor</span>;
+
+<span class="kw">echo</span> <span class="var">$triple</span>(<span class="num">5</span>); <span class="cm">// 15</span>
+        </div>
+        <div class="note">⭐ Arrow functions automatically capture outer scope — no need for <code>use</code>!</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">📦</span> Pass by Value vs Reference</div>
+        <div class="code-block">
+<span class="cm">// Pass by VALUE — original unchanged</span>
+<span class="kw">function</span> <span class="fn">addTen</span>(<span class="var">$n</span>) { <span class="var">$n</span> += <span class="num">10</span>; }
+<span class="var">$x</span> = <span class="num">5</span>; <span class="fn">addTen</span>(<span class="var">$x</span>); <span class="kw">echo</span> <span class="var">$x</span>; <span class="cm">// 5</span>
+
+<span class="cm">// Pass by REFERENCE — original changed</span>
+<span class="kw">function</span> <span class="fn">addTenRef</span>(&<span class="var">$n</span>) { <span class="var">$n</span> += <span class="num">10</span>; }
+<span class="var">$y</span> = <span class="num">5</span>; <span class="fn">addTenRef</span>(<span class="var">$y</span>); <span class="kw">echo</span> <span class="var">$y</span>; <span class="cm">// 15</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • Arrays & Functions</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 8: HTTP & REST API ═══════════════ -->
+  <div class="page" id="page-8">
+    <div class="page-header">
+      <div class="page-num-badge">08</div>
+      <div class="page-title">HTTP & REST API <span class="priority p-med">🟠 Important</span></div>
+      <div class="page-subtitle">GET/POST, HTTP codes, JSON, REST principles</div>
+    </div>
+    <div class="page-content">
+
+      <div class="section">
+        <div class="section-title"><span class="icon">📡</span> GET vs POST</div>
+        <table class="nb-table">
+          <tr><th>Feature</th><th>GET</th><th>POST</th></tr>
+          <tr><td>Data location</td><td>URL query string</td><td>Request body</td></tr>
+          <tr><td>Visibility</td><td>Visible in URL</td><td>Hidden</td></tr>
+          <tr><td>Security</td><td>Less secure</td><td>More secure</td></tr>
+          <tr><td>Use for</td><td>Read data</td><td>Create/update data</td></tr>
+          <tr><td>Max size</td><td>~2048 chars</td><td>No limit (server config)</td></tr>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🔢</span> HTTP Status Codes</div>
+        <div class="cards">
+          <div class="card green"><div class="card-title">200 OK</div><div class="card-body">Request successful</div></div>
+          <div class="card green"><div class="card-title">201 Created</div><div class="card-body">Resource created successfully</div></div>
+          <div class="card orange"><div class="card-title">301 Redirect</div><div class="card-body">Permanently moved</div></div>
+          <div class="card red"><div class="card-title">400 Bad Request</div><div class="card-body">Invalid request syntax</div></div>
+          <div class="card red"><div class="card-title">401 Unauthorized</div><div class="card-body">Authentication required</div></div>
+          <div class="card red"><div class="card-title">404 Not Found</div><div class="card-body">Resource doesn't exist</div></div>
+          <div class="card red"><div class="card-title">422 Unprocessable</div><div class="card-body">Validation failed</div></div>
+          <div class="card red"><div class="card-title">500 Server Error</div><div class="card-body">Internal server error</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🔄</span> JSON Encode & Decode</div>
+        <div class="code-block">
+<span class="cm">// Array → JSON string</span>
+<span class="var">$data</span> = [<span class="str">'name'</span> => <span class="str">'Alice'</span>, <span class="str">'age'</span> => <span class="num">25</span>];
+<span class="var">$json</span> = <span class="fn">json_encode</span>(<span class="var">$data</span>); <span class="cm">// {"name":"Alice","age":25}</span>
+
+<span class="cm">// JSON string → PHP array</span>
+<span class="var">$arr</span> = <span class="fn">json_decode</span>(<span class="var">$json</span>, <span class="kw">true</span>); <span class="cm">// true = associative array</span>
+
+<span class="cm">// REST API response pattern</span>
+<span class="fn">header</span>(<span class="str">'Content-Type: application/json'</span>);
+<span class="kw">echo</span> <span class="fn">json_encode</span>([
+  <span class="str">'status'</span>  => <span class="str">'success'</span>,
+  <span class="str">'data'</span>    => <span class="var">$result</span>,
+  <span class="str">'message'</span> => <span class="str">'User created'</span>
+]);
+        </div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • HTTP & REST API</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 9: PHP 8 Features ═══════════════ -->
+  <div class="page" id="page-9">
+    <div class="page-header">
+      <div class="page-num-badge">09</div>
+      <div class="page-title">PHP 8.x Features <span class="priority p-bonus">🟢 Bonus Points</span></div>
+      <div class="page-subtitle">Modern PHP — match, named args, enums, fibers</div>
+    </div>
+    <div class="page-content">
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🎯</span> Match Expression (PHP 8.0)</div>
+        <div class="code-block">
+<span class="cm">// match is strict (===), returns a value, no fallthrough</span>
+<span class="var">$status</span> = <span class="num">2</span>;
+<span class="var">$label</span> = <span class="kw">match</span>(<span class="var">$status</span>) {
+  <span class="num">1</span>    => <span class="str">'Active'</span>,
+  <span class="num">2</span>, <span class="num">3</span> => <span class="str">'Pending'</span>,  <span class="cm">// multiple conditions</span>
+  <span class="num">4</span>    => <span class="str">'Inactive'</span>,
+  <span class="kw">default</span> => <span class="str">'Unknown'</span>
+};
+<span class="cm">// vs switch: match is exhaustive, strict, no break needed!</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🏷️</span> Named Arguments & Null Safe Operator</div>
+        <div class="code-block">
+<span class="cm">// Named Arguments (PHP 8.0)</span>
+<span class="fn">array_slice</span>(<span class="plain">array:</span> <span class="var">$arr</span>, <span class="plain">offset:</span> <span class="num">2</span>, <span class="plain">length:</span> <span class="num">3</span>);
+
+<span class="cm">// Null Safe Operator (PHP 8.0)</span>
+<span class="cm">// Old way:</span>
+<span class="var">$city</span> = <span class="var">$user</span> ? <span class="var">$user</span>-><span class="fn">getAddress</span>() ? <span class="var">$user</span>-><span class="fn">getAddress</span>()-><span class="fn">getCity</span>() : <span class="kw">null</span> : <span class="kw">null</span>;
+<span class="cm">// New way — chain safely:</span>
+<span class="var">$city</span> = <span class="var">$user</span>?-><span class="fn">getAddress</span>()?-><span class="fn">getCity</span>();
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">📋</span> Enums (PHP 8.1)</div>
+        <div class="code-block">
+<span class="cm">// Pure enum</span>
+<span class="kw">enum</span> <span class="fn">Status</span> {
+  <span class="kw">case</span> <span class="plain">Active</span>;
+  <span class="kw">case</span> <span class="plain">Inactive</span>;
+  <span class="kw">case</span> <span class="plain">Pending</span>;
+}
+
+<span class="cm">// Backed enum with values</span>
+<span class="kw">enum</span> <span class="fn">Color</span>: <span class="kw">string</span> {
+  <span class="kw">case</span> <span class="plain">Red</span>   = <span class="str">'red'</span>;
+  <span class="kw">case</span> <span class="plain">Green</span> = <span class="str">'green'</span>;
+  <span class="kw">case</span> <span class="plain">Blue</span>  = <span class="str">'blue'</span>;
+}
+
+<span class="var">$c</span> = <span class="fn">Color</span>::<span class="plain">Red</span>;
+<span class="kw">echo</span> <span class="var">$c</span>-><span class="plain">value</span>; <span class="cm">// red</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🔗</span> Union Types & Readonly (PHP 8.0 / 8.1)</div>
+        <div class="code-block">
+<span class="cm">// Union types</span>
+<span class="kw">function</span> <span class="fn">process</span>(<span class="kw">int</span>|<span class="kw">string</span> <span class="var">$input</span>): <span class="kw">int</span>|<span class="kw">bool</span> { ... }
+
+<span class="cm">// Readonly properties (PHP 8.1)</span>
+<span class="kw">class</span> <span class="fn">User</span> {
+  <span class="kw">public readonly string</span> <span class="var">$name</span>; <span class="cm">// can only be set once!</span>
+  <span class="kw">public function</span> <span class="fn">__construct</span>(<span class="kw">string</span> <span class="var">$name</span>) {
+    <span class="var">$this</span>-><span class="plain">name</span> = <span class="var">$name</span>;
+  }
+}
+        </div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • PHP 8.x Features</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 10: Design Patterns ═══════════════ -->
+  <div class="page" id="page-10">
+    <div class="page-header">
+      <div class="page-num-badge">10</div>
+      <div class="page-title">Design Patterns <span class="priority p-bonus">🟢 Bonus Points</span></div>
+      <div class="page-subtitle">Singleton, Factory, MVC, Repository</div>
+    </div>
+    <div class="page-content">
+
+      <div class="section">
+        <div class="section-title"><span class="icon">1️⃣</span> Singleton Pattern</div>
+        <div class="code-block">
+<span class="kw">class</span> <span class="fn">Database</span> {
+  <span class="kw">private static</span> ?<span class="fn">Database</span> <span class="var">$instance</span> = <span class="kw">null</span>;
+  <span class="kw">private function</span> <span class="fn">__construct</span>() {} <span class="cm">// prevent new</span>
+  <span class="kw">private function</span> <span class="fn">__clone</span>() {}     <span class="cm">// prevent clone</span>
+
+  <span class="kw">public static function</span> <span class="fn">getInstance</span>(): <span class="kw">static</span> {
+    <span class="kw">if</span> (<span class="kw">static</span>::<span class="var">$instance</span> === <span class="kw">null</span>) {
+      <span class="kw">static</span>::<span class="var">$instance</span> = <span class="kw">new static</span>();
+    }
+    <span class="kw">return static</span>::<span class="var">$instance</span>;
+  }
+}
+<span class="cm">// Always returns same instance:</span>
+<span class="var">$db</span> = <span class="fn">Database</span>::<span class="fn">getInstance</span>();
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🏭</span> Factory Pattern</div>
+        <div class="code-block">
+<span class="kw">interface</span> <span class="fn">Notification</span> {
+  <span class="kw">public function</span> <span class="fn">send</span>(<span class="kw">string</span> <span class="var">$msg</span>): <span class="kw">void</span>;
+}
+<span class="kw">class</span> <span class="fn">EmailNotification</span> <span class="kw">implements</span> <span class="fn">Notification</span> { ... }
+<span class="kw">class</span> <span class="fn">SmsNotification</span> <span class="kw">implements</span> <span class="fn">Notification</span>   { ... }
+
+<span class="kw">class</span> <span class="fn">NotificationFactory</span> {
+  <span class="kw">public static function</span> <span class="fn">create</span>(<span class="kw">string</span> <span class="var">$type</span>): <span class="fn">Notification</span> {
+    <span class="kw">return match</span>(<span class="var">$type</span>) {
+      <span class="str">'email'</span> => <span class="kw">new</span> <span class="fn">EmailNotification</span>(),
+      <span class="str">'sms'</span>   => <span class="kw">new</span> <span class="fn">SmsNotification</span>(),
+    };
+  }
+}
+<span class="var">$n</span> = <span class="fn">NotificationFactory</span>::<span class="fn">create</span>(<span class="str">'email'</span>);
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🏗️</span> MVC Pattern</div>
+        <div class="cards">
+          <div class="card red"><div class="card-title">Model</div><div class="card-body">Data layer — database queries, business logic, data validation</div></div>
+          <div class="card"><div class="card-title">View</div><div class="card-body">Presentation layer — HTML templates, display data to user</div></div>
+          <div class="card green"><div class="card-title">Controller</div><div class="card-body">Application logic — handles requests, uses Models, returns Views</div></div>
+        </div>
+        <div class="note blue">💡 Used in Laravel, Symfony, CodeIgniter — understand this thoroughly!</div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • Design Patterns</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 11: Common Interview Q&A ═══════════════ -->
+  <div class="page" id="page-11">
+    <div class="page-header">
+      <div class="page-num-badge">11</div>
+      <div class="page-title">Top Interview Q&amp;A <span class="priority p-high">🔴 Practice These!</span></div>
+      <div class="page-subtitle">Most commonly asked PHP interview questions with answers</div>
+    </div>
+    <div class="page-content">
+
+      <div class="iq">
+        <div class="iq-q">❓ Q1: What is the difference between == and ===?</div>
+        <div class="iq-a"><strong>==</strong> (loose comparison) converts types before comparing: <code>"1" == 1</code> is true. <strong>===</strong> (strict comparison) checks both value AND type: <code>"1" === 1</code> is false. Always prefer === for predictable results.</div>
+      </div>
+
+      <div class="iq">
+        <div class="iq-q">❓ Q2: What are magic methods? Give examples.</div>
+        <div class="iq-a">Magic methods are predefined methods starting with double underscore that PHP calls automatically. Examples: <strong>__construct()</strong> on object creation, <strong>__toString()</strong> when echoing an object, <strong>__get()/__set()</strong> for inaccessible properties, <strong>__call()</strong> for undefined methods.</div>
+      </div>
+
+      <div class="iq">
+        <div class="iq-q">❓ Q3: Interface vs Abstract Class — when to use which?</div>
+        <div class="iq-a">Use <strong>Interface</strong> when you want to define a contract (what a class MUST do) without any implementation. A class can implement multiple interfaces. Use <strong>Abstract Class</strong> when you have shared implementation code — it can have method bodies, properties, and constructor. A class can only extend one abstract class.</div>
+      </div>
+
+      <div class="iq">
+        <div class="iq-q">❓ Q4: How do you prevent SQL injection in PHP?</div>
+        <div class="iq-a">Use <strong>prepared statements</strong> with PDO or MySQLi. Never concatenate user input directly into SQL queries. Use <code>$pdo->prepare()</code> with named parameters (<code>:param</code>) and bind values with <code>bindParam()</code> or pass them in <code>execute([])</code>.</div>
+      </div>
+
+      <div class="iq">
+        <div class="iq-q">❓ Q5: What is a Trait and why use it?</div>
+        <div class="iq-a">A Trait is a mechanism for code reuse in single-inheritance languages. It lets you "inject" methods into classes that don't share an inheritance hierarchy. A class can use multiple traits. Useful for cross-cutting concerns like logging, timestamps, soft-delete behavior.</div>
+      </div>
+
+      <div class="iq">
+        <div class="iq-q">❓ Q6: Session vs Cookie — explain the difference.</div>
+        <div class="iq-a"><strong>Sessions</strong> store data on the SERVER — more secure, limited by server memory. <strong>Cookies</strong> store data on the CLIENT's browser — less secure, size limit ~4KB, can persist across browser restarts with expiry. Sessions use a cookie (session ID) to identify the user.</div>
+      </div>
+
+      <div class="iq">
+        <div class="iq-q">❓ Q7: What is the difference between array_map and array_filter?</div>
+        <div class="iq-a"><strong>array_map()</strong> transforms every element and returns a new array of the same size. <strong>array_filter()</strong> keeps only elements where the callback returns true, returning a smaller subset array.</div>
+      </div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • Interview Q&A</div>
+  </div>
+
+  <!-- ═══════════════ PAGE 12: Quick Reference ═══════════════ -->
+  <div class="page" id="page-12">
+    <div class="page-header">
+      <div class="page-num-badge">12</div>
+      <div class="page-title">Quick Reference Cheatsheet <span class="priority p-bonus">📌 Keep Handy</span></div>
+      <div class="page-subtitle">String functions, superglobals & study roadmap</div>
+    </div>
+    <div class="page-content">
+
+      <div class="two-col">
+        <div class="section">
+          <div class="section-title"><span class="icon">🔤</span> String Functions</div>
+          <ul class="nb-list">
+            <li><code>strlen($s)</code> — string length</li>
+            <li><code>strtolower/upper($s)</code> — change case</li>
+            <li><code>trim($s)</code> — remove whitespace</li>
+            <li><code>str_replace($f,$r,$s)</code> — replace</li>
+            <li><code>strpos($s,$needle)</code> — find position</li>
+            <li><code>substr($s, $start, $len)</code> — slice</li>
+            <li><code>explode(',', $s)</code> — string to array</li>
+            <li><code>implode(',', $arr)</code> — array to string</li>
+            <li><code>sprintf('%05d', 42)</code> — format string</li>
+            <li><code>str_pad($s, 10, '0')</code> — pad string</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="icon">🌍</span> Superglobals</div>
+          <ul class="nb-list">
+            <li><code>$_GET</code> — URL query parameters</li>
+            <li><code>$_POST</code> — form POST data</li>
+            <li><code>$_REQUEST</code> — GET + POST + COOKIE</li>
+            <li><code>$_SESSION</code> — session data</li>
+            <li><code>$_COOKIE</code> — browser cookies</li>
+            <li><code>$_FILES</code> — uploaded files</li>
+            <li><code>$_SERVER</code> — server & env info</li>
+            <li><code>$_ENV</code> — environment variables</li>
+            <li><code>$GLOBALS</code> — all global variables</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="icon">🗺️</span> Interview Study Roadmap</div>
+        <div class="cards">
+          <div class="card red"><div class="card-title">Week 1</div><div class="card-body">Core PHP + Data Types + Operators + Control Structures</div></div>
+          <div class="card red"><div class="card-title">Week 2</div><div class="card-body">OOP: Classes, Inheritance, Interfaces, Abstract, Traits</div></div>
+          <div class="card orange"><div class="card-title">Week 3</div><div class="card-body">Database (PDO), Security (XSS, CSRF, SQL Injection)</div></div>
+          <div class="card orange"><div class="card-title">Week 4</div><div class="card-body">Sessions, Cookies, Error Handling, Arrays, Functions</div></div>
+          <div class="card green"><div class="card-title">Week 5</div><div class="card-body">PHP 8 Features, Design Patterns, REST API</div></div>
+          <div class="card"><div class="card-title">Week 6</div><div class="card-body">Practice coding challenges + mock interviews</div></div>
+        </div>
+      </div>
+
+      <div class="note green">🎯 <strong>Final Tip:</strong> Focus on OOP + Database + Security — these 3 topics cover 70% of all PHP interview questions. Practice writing code by hand!</div>
+
+    </div>
+    <div class="page-footer">PHP Interview Notebook • Quick Reference</div>
+  </div>
+
+</div><!-- end notebook -->
+
+<!-- TOC Modal -->
+<div class="toc-overlay" id="tocOverlay" onclick="closeTOCOnBg(event)">
+  <div class="toc-box">
+    <button class="toc-close" onclick="toggleTOC()">✕</button>
+    <h2>📑 Table of Contents</h2>
+    <div class="toc-grid" id="tocGrid"></div>
+  </div>
+</div>
+
+<script>
+const pages = [
+  { num: 1, title: 'Core PHP Basics',        icon: '⚡' },
+  { num: 2, title: 'OOP Concepts',            icon: '🏛️' },
+  { num: 3, title: 'Database & PDO',          icon: '🗄️' },
+  { num: 4, title: 'Security',                icon: '🔐' },
+  { num: 5, title: 'Sessions & Cookies',      icon: '🍪' },
+  { num: 6, title: 'Error Handling',          icon: '⚠️' },
+  { num: 7, title: 'Arrays & Functions',      icon: '🗃️' },
+  { num: 8, title: 'HTTP & REST API',         icon: '📡' },
+  { num: 9, title: 'PHP 8.x Features',        icon: '🚀' },
+  { num:10, title: 'Design Patterns',         icon: '🏗️' },
+  { num:11, title: 'Interview Q&A',           icon: '❓' },
+  { num:12, title: 'Quick Reference',         icon: '📌' },
+];
+
+let current = 1;
+
+// Build TOC
+const tocGrid = document.getElementById('tocGrid');
+pages.forEach(p => {
+  const item = document.createElement('div');
+  item.className = 'toc-item';
+  item.innerHTML = `<span class="toc-num">${String(p.num).padStart(2,'0')}</span><span class="toc-name">${p.icon} ${p.title}</span>`;
+  item.onclick = () => { goToPage(p.num); toggleTOC(); };
+  tocGrid.appendChild(item);
+});
+
+function showPage(n) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + n).classList.add('active');
+  document.getElementById('pageIndicator').textContent = n + ' / ' + pages.length;
+  document.getElementById('prevBtn').disabled = n === 1;
+  document.getElementById('nextBtn').disabled = n === pages.length;
+  document.getElementById('progressFill').style.width = ((n / pages.length) * 100).toFixed(1) + '%';
+  current = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function changePage(dir) {
+  const next = current + dir;
+  if (next >= 1 && next <= pages.length) showPage(next);
+}
+
+function goToPage(n) { showPage(n); }
+
+function toggleTOC() {
+  document.getElementById('tocOverlay').classList.toggle('open');
+}
+
+function closeTOCOnBg(e) {
+  if (e.target === document.getElementById('tocOverlay')) toggleTOC();
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changePage(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changePage(-1);
+  if (e.key === 'Escape') document.getElementById('tocOverlay').classList.remove('open');
+});
+</script>
+</body>
+</html>
