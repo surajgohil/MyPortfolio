@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Suraj Gohil — Full-Stack Developer</title>
+  <title>Suraj Gohil — Software Developer</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -324,7 +325,7 @@
       transition: border-color 0.2s, background 0.2s;
     }
     .contact-item:hover { border-color: var(--accent2); background: rgba(98,212,245,0.04); }
-    .contact-icon { font-size: 1rem; }
+    .contact-icon { font-size: 1rem; color: var(--accent);}
     .contact-val {
       font-family: var(--font-mono);
       font-size: 0.78rem;
@@ -575,7 +576,10 @@
       color: var(--muted);
     }
 
-    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links { 
+      display: flex; gap: 1.5rem;
+      align-items: end;
+    }
     .footer-links a {
       font-family: var(--font-mono);
       font-size: 0.72rem;
@@ -606,6 +610,74 @@
       .edu-grid { grid-template-columns: 1fr; }
       footer { flex-direction: column; text-align: center; padding: 3rem 1.5rem; }
     }
+    .hero-image {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+      margin-left: auto;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, rgba(200,245,98,0.1), rgba(98,212,245,0.08));
+    }
+
+    .hero-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: contrast(1.1) brightness(1.05);
+      transition: transform 0.4s ease;
+    }
+
+    .hero-image:hover img {
+      transform: scale(1.05);
+    }
+
+    /* map */
+    #location {
+      background: var(--surface);
+    }
+
+    .map-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .map-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+
+    .map-card > p {
+      margin: 15px;
+    }
+    .map-card > h3 {
+      border-bottom: 1px solid #3d3b3b;
+    }
+
+    .map-card:hover {
+      border-color: var(--accent);
+    }
+
+    .map-card h3 {
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .map-card iframe {
+      width: 100%;
+      height: 300px;
+      border: 0;
+    }
+    @media (max-width: 900px) {
+      .map-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -635,7 +707,7 @@
       <h1 class="hero-name">
         Suraj<br/>
         Gohil
-        <span>Full-Stack Developer</span>
+        <span>Software Developer</span>
       </h1>
       <p class="hero-role">
         Building <em>scalable web systems</em> with PHP, CodeIgniter & JavaScript.<br/>
@@ -648,10 +720,11 @@
       </div>
     </div>
 
+
     <div class="hero-right">
       <div class="stat-card">
         <div class="stat-num" data-count="3">0</div>
-        <div class="stat-label"><strong>Years of Experience</strong> Professional full-stack development</div>
+        <div class="stat-label"><strong>Years of Experience</strong> Professional Software development</div>
       </div>
       <div class="stat-card">
         <div class="stat-num" data-count="3">0</div>
@@ -683,7 +756,7 @@
     <div class="about-grid">
       <div class="about-text">
         <p>
-          I'm a <strong>results-driven Full-Stack Web Developer</strong> based in Ahmedabad, Gujarat — passionate about building web applications that are both technically sound and delightfully usable.
+          I'm a <strong>results-driven Software Software Developer</strong> based in Ahmedabad, Gujarat — passionate about building web applications that are both technically sound and delightfully usable.
         </p>
         <p>
           With 3+ years of professional experience, I've shipped enterprise-grade systems: from <strong>CRM platforms</strong> managing sales pipelines, to <strong>Shopify integrations</strong> handling real-time payment disputes, to <strong>project management tools</strong> used daily by development teams.
@@ -697,20 +770,20 @@
       </div>
       <div class="about-contact">
         <div class="contact-item">
-          <span class="contact-icon">📍</span>
+          <span class="contact-icon"><i class="fa-solid fa-location-dot"></i></span>
           <div class="contact-val">Ahmedabad, Gujarat, India</div>
         </div>
         <div class="contact-item">
-          <span class="contact-icon">📞</span>
+          <span class="contact-icon"><i class="fa-solid fa-phone"></i></span>
           <div class="contact-val"><a href="tel:+919558304863">+91 955 830 4863</a></div>
         </div>
         <div class="contact-item">
-          <span class="contact-icon">✉️</span>
+          <span class="contact-icon"><i class="fa-solid fa-envelope"></i></span>
           <div class="contact-val"><a href="mailto:gohilsuraj24@gmail.com">gohilsuraj24@gmail.com</a></div>
         </div>
         <div class="contact-item">
-          <span class="contact-icon">💼</span>
-          <div class="contact-val"><a href="https://linkedin.com/in/surajgohil" target="_blank">linkedin.com/in/surajgohil</a></div>
+          <span class="contact-icon"><i class="fa-brands fa-linkedin"></i></span>
+          <div class="contact-val"><a href="https://linkedin.com/in/suraj-gohil-9ba7621a4" target="_blank">linkedin.com/in/surajgohil</a></div>
         </div>
       </div>
     </div>
@@ -731,7 +804,7 @@
           <span class="timeline-period">Mar 2025 — Present</span>
           <span class="timeline-co">Metizsoft Pvt. Ltd · Ahmedabad</span>
         </div>
-        <div class="timeline-role">Web Developer</div>
+        <div class="timeline-role">Software Developer</div>
         <ul class="timeline-tasks">
           <li>Architected and developed Disputifier — a Shopify Transaction Dispute Tracker enabling merchants to monitor and resolve payment disputes efficiently.</li>
           <li>Implemented core PHP/CodeIgniter backend logic to handle real-time Shopify webhook events and transaction data processing.</li>
@@ -746,7 +819,7 @@
           <span class="timeline-period">Jun 2024 — Dec 2024</span>
           <span class="timeline-co">Cipher Craft Pvt. Ltd · Rajkot</span>
         </div>
-        <div class="timeline-role">Web Developer</div>
+        <div class="timeline-role">Software Developer</div>
         <ul class="timeline-tasks">
           <li>Built a full-featured CRM system from the ground up using core PHP and CodeIgniter framework.</li>
           <li>Developed modules for lead management, contact tracking, follow-up scheduling, and sales pipeline visualization.</li>
@@ -761,7 +834,7 @@
           <span class="timeline-period">Aug 2022 — Mar 2024</span>
           <span class="timeline-co">i-Quall Infoweb · Rajkot</span>
         </div>
-        <div class="timeline-role">Web Developer</div>
+        <div class="timeline-role">Software Developer</div>
         <ul class="timeline-tasks">
           <li>Developed and maintained a comprehensive Project Management System supporting task assignment, progress tracking, and team collaboration.</li>
           <li>Built responsive front-end interfaces using HTML5, CSS3, Bootstrap, and jQuery with cross-browser compatibility.</li>
@@ -810,7 +883,6 @@
       <div class="skill-group">
         <div class="skill-group-title">APIs & Integrations</div>
         <div class="skill-tags">
-          <span class="skill-tag">Shopify API</span>
           <span class="skill-tag">RESTful APIs</span>
           <span class="skill-tag">AJAX</span>
           <span class="skill-tag">Webhooks</span>
@@ -822,7 +894,6 @@
           <span class="skill-tag">Git</span>
           <span class="skill-tag">MVC Architecture</span>
           <span class="skill-tag">RBAC</span>
-          <span class="skill-tag">Agile / Scrum</span>
           <span class="skill-tag">Responsive Design</span>
         </div>
       </div>
@@ -915,14 +986,43 @@
     </div>
   </section>
 
+  <!-- Map -->
+  <section id="location">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Locations</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="map-grid">
+      <div class="map-card">
+        <h3>Ahmedabad</h3>
+        <p>C-47, Mansukh Nagar, Nava Vadaj, Ahmedabad, Gujarat 380013</p>
+        <iframe 
+          src="https://www.google.com/maps?q=C-47, Mansukh Nagar, Nava Vadaj, Ahmedabad, Gujarat 380013&output=embed"
+          loading="lazy">
+        </iframe>
+      </div>
+
+      <div class="map-card">
+        <h3>Rajkot</h3>
+        <p>24, Gujarat Society, Arya Nagar, Rajkot, Gujarat 360003</p>
+        <iframe 
+          src="https://www.google.com/maps?q=24, Gujarat Society, Arya Nagar, Rajkot, Gujarat 360003&output=embed"
+          loading="lazy">
+        </iframe>
+      </div>
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer>
     <div class="footer-brand">Suraj <span>Gohil</span></div>
-    <div class="footer-copy">© 2025 · Built with precision & purpose</div>
+    <div class="footer-copy">© 2026 · Built with precision & purpose</div>
     <div class="footer-links">
-      <a href="mailto:gohilsuraj24@gmail.com">Email</a>
-      <a href="https://linkedin.com/in/surajgohil" target="_blank">LinkedIn</a>
-      <a href="tel:+919558304863">Call</a>
+      <a href="mailto:gohilsuraj24@gmail.com"><span class=""><i class="fa-solid fa-envelope contact-icon"></i></span> Email</a>
+      <a href="https://linkedin.com/in/surajgohil" target="_blank"><span class="contact-icon"><i class="fa-brands fa-linkedin"></i></span> LinkedIn</a>
+      <a href="tel:+919558304863"><span class="contact-icon"><i class="fa-solid fa-phone"></i></span> Call</a>
     </div>
   </footer>
 
