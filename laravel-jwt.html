@@ -1,199 +1,445 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete Beginner Guide to JWT Authentication in Laravel API</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JWT Authentication in Laravel — A Field Guide</title>
+<style>
+  :root{
+    --ink:#16213A;
+    --ink-soft:#3C4A66;
+    --paper:#EEF1F2;
+    --paper-card:#FFFFFF;
+    --teal:#2F6F6D;
+    --teal-deep:#1E4B49;
+    --amber:#E0983A;
+    --code-bg:#12192B;
+    --code-text:#DCE7E6;
+    --code-key:#E0983A;
+    --line:#D6DCDD;
+  }
 
-    <style>
-        body{
-            font-family: Arial, Helvetica, sans-serif;
-            max-width: 1100px;
-            margin:auto;
-            padding:40px;
-            line-height:1.8;
-            background:#f5f5f5;
-            color:#333;
-        }
+  *{box-sizing:border-box;}
 
-        h1,h2,h3{
-            color:#1b4f72;
-        }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
 
-        pre{
-            background:#272822;
-            color:#fff;
-            padding:15px;
-            overflow:auto;
-            border-radius:6px;
-        }
+  h1,h2,h3{
+    font-family:"Fraunces","Georgia",serif;
+    color:var(--ink);
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
 
-        code{
-            font-family: Consolas;
-        }
+  a{color:var(--teal-deep);}
 
-        .note{
-            background:#fff8dc;
-            padding:15px;
-            border-left:5px solid orange;
-            margin:20px 0;
-        }
+  .wrap{max-width:880px;margin:0 auto;padding:0 24px;}
 
-        .success{
-            background:#d4edda;
-            padding:15px;
-            border-left:5px solid green;
-            margin:20px 0;
-        }
+  /* ---------- HERO ---------- */
+  .hero{
+    background:var(--ink);
+    color:#fff;
+    padding:90px 0 70px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero .wrap{position:relative;z-index:2;}
+  .eyebrow{
+    display:inline-block;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:13px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--amber);
+    border:1px solid rgba(224,152,58,0.5);
+    border-radius:999px;
+    padding:5px 14px;
+    margin-bottom:22px;
+  }
+  .hero h1{
+    font-size:clamp(2.2rem,5vw,3.4rem);
+    color:#fff;
+    margin:0 0 16px;
+    max-width:14ch;
+  }
+  .hero p.lead{
+    font-size:1.15rem;
+    color:#B9C4D6;
+    max-width:56ch;
+    margin:0 0 36px;
+  }
 
-        table{
-            width:100%;
-            border-collapse:collapse;
-        }
+  /* token anatomy diagram - signature element */
+  .token-diagram{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:stretch;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.85rem;
+  }
+  .token-part{
+    flex:1 1 160px;
+    border-radius:10px;
+    padding:16px 18px;
+    position:relative;
+  }
+  .token-part .label{
+    display:block;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    margin-bottom:8px;
+    opacity:0.75;
+  }
+  .token-part.header{background:#233257;color:#9FC7FF;}
+  .token-part.payload{background:#2F6F6D;color:#D9FBF4;}
+  .token-part.sig{background:#5A3A1E;color:#FBD9A8;}
+  .token-dot{
+    align-self:center;
+    color:#5A6C8C;
+    font-size:1.4rem;
+    padding:0 2px;
+  }
 
-        table th,table td{
-            border:1px solid #ddd;
-            padding:10px;
-        }
+  /* ---------- SECTIONS ---------- */
+  section.step{
+    padding:56px 0;
+    border-bottom:1px solid var(--line);
+  }
+  section.step:last-of-type{border-bottom:none;}
 
-        table th{
-            background:#007bff;
-            color:white;
-        }
-    </style>
+  .step-number{
+    font-family:"IBM Plex Mono",monospace;
+    color:var(--amber);
+    font-size:14px;
+    letter-spacing:0.1em;
+    margin-bottom:6px;
+  }
+  .step h2{
+    font-size:1.7rem;
+    margin:0 0 18px;
+  }
+  .step p{color:var(--ink-soft); font-size:1.02rem;}
+  .step ul, .step ol{color:var(--ink-soft); font-size:1.02rem; padding-left:1.3em;}
+  .step table{width:100%; border-collapse:collapse; margin:20px 0; font-size:0.95rem;}
+  .step th, .step td{border:1px solid var(--line); padding:10px 12px; text-align:left; color:var(--ink-soft);}
+  .step th{background:#E3E8E9; color:var(--ink);}
 
+  /* ---------- CODE BLOCKS ---------- */
+  .code-card{
+    margin:22px 0 0;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 6px 20px rgba(22,33,58,0.12);
+  }
+  .code-bar{
+    background:#0C1220;
+    color:#8FA3C4;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12.5px;
+    padding:10px 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #1E2A45;
+  }
+  .code-bar .dots{display:flex; gap:6px;}
+  .code-bar .dots span{width:9px;height:9px;border-radius:50%;background:#2A3752;display:inline-block;}
+  .copy-btn{
+    background:transparent;
+    border:1px solid #2A3752;
+    color:#8FA3C4;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:6px;
+    cursor:pointer;
+  }
+  .copy-btn:hover{border-color:var(--amber); color:var(--amber);}
+  pre{
+    margin:0;
+    background:var(--code-bg);
+    color:var(--code-text);
+    padding:18px 20px;
+    overflow-x:auto;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.87rem;
+    line-height:1.55;
+  }
+  pre .cmt{color:#6F87A8;}
+  pre .str{color:#B6E3B0;}
+  pre .kw{color:#E0983A;}
+
+  /* ---------- ANNOTATION / EXPLANATION CARD ---------- */
+  .annotation{
+    background:var(--paper-card);
+    border-left:4px solid var(--teal);
+    border-radius:0 10px 10px 0;
+    padding:16px 22px;
+    margin:0 0 4px;
+    box-shadow:0 3px 10px rgba(22,33,58,0.05);
+  }
+  .annotation .tag{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.09em;
+    color:var(--teal-deep);
+    margin-bottom:8px;
+    display:block;
+  }
+  .annotation p, .annotation li{
+    font-size:0.96rem;
+    color:var(--ink-soft);
+    margin:0 0 8px;
+  }
+  .annotation ul{margin:0; padding-left:1.2em;}
+  .annotation code{
+    background:#E3E8E9;
+    padding:1px 6px;
+    border-radius:4px;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.87em;
+    color:var(--teal-deep);
+  }
+
+  .callout{
+    background:#FCEFDD;
+    border:1px solid #F0D4A6;
+    border-radius:10px;
+    padding:16px 20px;
+    margin:24px 0;
+  }
+  .callout .tag{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.09em;
+    color:#8A5A1B;
+    display:block;
+    margin-bottom:6px;
+  }
+  .callout p{margin:0; color:#5A3E1B; font-size:0.95rem;}
+
+  code.inline{
+    background:#E3E8E9;
+    padding:1px 6px;
+    border-radius:4px;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:0.9em;
+    color:var(--teal-deep);
+  }
+
+  .endpoint-table td:first-child{font-family:"IBM Plex Mono",monospace; font-size:0.85rem; color:var(--teal-deep);}
+
+  footer{
+    background:var(--ink);
+    color:#B9C4D6;
+    padding:50px 0 60px;
+    text-align:center;
+  }
+  footer h3{color:#fff;}
+  footer p{max-width:56ch; margin:0 auto; color:#9FB0CC;}
+
+  @media (max-width:600px){
+    .hero{padding:60px 0 44px;}
+    section.step{padding:40px 0;}
+  }
+</style>
 </head>
 <body>
 
-<h1>Complete Beginner Guide to JWT Authentication in Laravel API</h1>
+<div class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Beginner's Field Guide</span>
+    <h1>JWT Authentication in Laravel</h1>
+    <p class="lead">A complete, annotated walkthrough — every code block is followed by a plain-language note explaining exactly what it does and why it's there.</p>
 
-<p>
-If you're building REST APIs using Laravel, one of the most common authentication methods
-is <strong>JWT (JSON Web Token)</strong>. JWT allows users to authenticate once and then
-use a secure token to access protected API endpoints without maintaining server-side sessions.
-</p>
+    <div class="token-diagram" aria-label="Diagram of a JWT's three parts">
+      <div class="token-part header">
+        <span class="label">Header</span>
+        { "alg": "HS256" }
+      </div>
+      <div class="token-dot">.</div>
+      <div class="token-part payload">
+        <span class="label">Payload</span>
+        { "sub": 14, "exp": 1719 }
+      </div>
+      <div class="token-dot">.</div>
+      <div class="token-part sig">
+        <span class="label">Signature</span>
+        HMACSHA256(...)
+      </div>
+    </div>
+  </div>
+</div>
 
-<p>
-In this beginner-friendly tutorial, we'll build a complete JWT authentication system in Laravel,
-including:
-</p>
+<div class="wrap">
 
-<ul>
-<li>Installing JWT Package</li>
-<li>Configuring Laravel</li>
-<li>User Registration API</li>
-<li>Login API</li>
-<li>Protected Routes</li>
-<li>Profile API</li>
-<li>Refresh Token</li>
-<li>Logout</li>
-</ul>
+<section class="step">
+  <div class="step-number">01 · Concept</div>
+  <h2>What is a JWT, really?</h2>
+  <p>A JSON Web Token is a compact, self-contained way of proving who a user is, without the server having to remember anything about them between requests. Look at the diagram above — a token is just three pieces glued together with dots:</p>
+  <ul>
+    <li><strong>Header</strong> — says which signing algorithm was used.</li>
+    <li><strong>Payload</strong> — holds the actual data, like the user's ID (<code class="inline">sub</code>) and an expiry time (<code class="inline">exp</code>).</li>
+    <li><strong>Signature</strong> — a cryptographic seal that proves nobody tampered with the first two parts.</li>
+  </ul>
+  <p>The login flow works like this: the user sends their email and password once, the server checks them and hands back a token, and from then on the client just attaches that token to every request instead of logging in again.</p>
 
-<hr>
+  <div class="annotation">
+    <span class="tag">Why this matters</span>
+    <p>Because the signature can only be created by someone who knows the server's secret key, nobody can edit a token (say, changing their user ID to someone else's) without the server immediately noticing that the signature no longer matches.</p>
+  </div>
 
-<h2>What is JWT?</h2>
+  <table>
+    <tr><th>Sessions</th><th>JWT</th></tr>
+    <tr><td>Server stores session data</td><td>Server stores nothing — the token holds the data</td></tr>
+    <tr><td>Great for traditional web apps</td><td>Great for APIs, mobile apps, SPAs</td></tr>
+    <tr><td>Needs shared storage across servers</td><td>Stateless — scales easily</td></tr>
+    <tr><td>Usually uses cookies</td><td>Usually sent via an <code class="inline">Authorization</code> header</td></tr>
+  </table>
+</section>
 
-<p>
-JWT (JSON Web Token) is an open standard used to securely transmit information between a client
-and a server. Instead of storing sessions on the server, the server generates a token after
-successful login.
-</p>
+<section class="step">
+  <div class="step-number">02 · Setup</div>
+  <h2>Starting a fresh Laravel project</h2>
+  <p>If you already have a project, you can skip straight to the next step. Otherwise, this creates a new Laravel app and gets it ready to connect to a database.</p>
 
-<p>
-The client stores this token and sends it with every API request.
-</p>
+  <div class="code-card">
+    <div class="code-bar"><span>terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre><span class="cmt"># create a new Laravel project</span>
+composer create-project laravel/laravel jwt-demo
+cd jwt-demo</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p><code>composer create-project</code> downloads Laravel and all its core dependencies into a new folder called <code>jwt-demo</code>. The second line just moves your terminal into that new folder so the following commands run in the right place.</p>
+  </div>
 
-<h3>JWT Authentication Flow</h3>
+  <p>Then point Laravel at your database by editing the <code class="inline">.env</code> file in the project root:</p>
 
-<pre><code>
-User Login
-      │
-      ▼
-Laravel verifies email & password
-      │
-      ▼
-JWT Token Generated
-      │
-      ▼
-Client Stores Token
-      │
-      ▼
-Authorization: Bearer TOKEN
-      │
-      ▼
-Protected API Access
-</code></pre>
-
-<hr>
-
-<h2>Step 1: Create Laravel Project</h2>
-
-<pre><code>composer create-project laravel/laravel jwt-api
-
-cd jwt-api
-</code></pre>
-
-<hr>
-
-<h2>Step 2: Install JWT Package</h2>
-
-<p>Install tymon/jwt-auth package.</p>
-
-<pre><code>composer require tymon/jwt-auth</code></pre>
-
-<hr>
-
-<h2>Step 3: Publish Configuration</h2>
-
-<pre><code>php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
-</code></pre>
-
-Laravel creates
-
-<pre><code>config/jwt.php</code></pre>
-
-<hr>
-
-<h2>Step 4: Generate JWT Secret</h2>
-
-<pre><code>php artisan jwt:secret</code></pre>
-
-Output
-
-<pre><code>
-JWT_SECRET=your_secret_key
-</code></pre>
-
-<hr>
-
-<h2>Step 5: Configure Database</h2>
-
-<p>Edit your <strong>.env</strong> file.</p>
-
-<pre><code>
-DB_CONNECTION=mysql
+  <div class="code-card">
+    <div class="code-bar"><span>.env</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=jwt_api
+DB_DATABASE=jwt_demo
 DB_USERNAME=root
-DB_PASSWORD=
-</code></pre>
+DB_PASSWORD=</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p>The <code>.env</code> file holds environment-specific settings that shouldn't be hard-coded into your app — database credentials, secret keys, and so on. Laravel reads these values automatically when it boots.</p>
+  </div>
+</section>
 
-Run migration
+<section class="step">
+  <div class="step-number">03 · Install</div>
+  <h2>Adding the JWT package</h2>
+  <p>Laravel doesn't include JWT support by default, so we bring in the most widely used community package for it, <strong>tymon/jwt-auth</strong>.</p>
 
-<pre><code>php artisan migrate</code></pre>
+  <div class="code-card">
+    <div class="code-bar"><span>terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>composer require tymon/jwt-auth</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p>This downloads the package and wires it into Laravel via Composer, PHP's dependency manager — the same tool you used to create the project itself.</p>
+  </div>
 
-<hr>
+  <div class="code-card">
+    <div class="code-bar"><span>terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p>This copies the package's default settings file into your project as <code>config/jwt.php</code>, where you can later tweak things like how long a token stays valid.</p>
+  </div>
 
-<h2>Step 6: Configure Authentication Guard</h2>
+  <div class="code-card">
+    <div class="code-bar"><span>terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>php artisan jwt:secret</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p>This generates a random secret key and saves it as <code>JWT_SECRET</code> in your <code>.env</code> file. It's the key used to sign every token, so treat it like a password — never commit it to a public repository.</p>
+  </div>
+</section>
 
-<p>Open <strong>config/auth.php</strong></p>
+<section class="step">
+  <div class="step-number">04 · Model</div>
+  <h2>Preparing the User model</h2>
+  <p>JWT needs your <code class="inline">User</code> model to implement a contract called <code class="inline">JWTSubject</code>, so the package knows how to attach a user's identity to a token.</p>
 
-Replace API guard with
+  <div class="code-card">
+    <div class="code-bar"><span>app/Models/User.php</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>&lt;?php
 
-<pre><code>
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+
+class User extends Authenticatable implements JWTSubject
+{
+    use Notifiable;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    <span class="cmt">// tells JWT which field identifies the user</span>
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    <span class="cmt">// lets you attach extra data to the token if needed</span>
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+}</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <ul>
+      <li><code>implements JWTSubject</code> is what marks this model as "JWT-aware."</li>
+      <li><code>getJWTIdentifier()</code> returns the value that will go in the token's <code>sub</code> claim — here, the user's primary key (their ID).</li>
+      <li><code>getJWTCustomClaims()</code> lets you stuff extra information into the token payload, like a role or tenant ID. We're leaving it empty for now — that's perfectly normal for a basic setup.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="step">
+  <div class="step-number">05 · Guard</div>
+  <h2>Configuring the auth guard</h2>
+  <p>Laravel decides how to authenticate a request using something called a "guard." We need to tell the <code class="inline">api</code> guard to use JWT instead of the default session-based driver.</p>
+
+  <div class="code-card">
+    <div class="code-bar"><span>config/auth.php</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>'defaults' => [
+    'guard' => 'api',
+    'passwords' => 'users',
+],
+
 'guards' => [
-
     'web' => [
         'driver' => 'session',
         'provider' => 'users',
@@ -203,342 +449,299 @@ Replace API guard with
         'driver' => 'jwt',
         'provider' => 'users',
     ],
+],</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p>Setting <code>'driver' => 'jwt'</code> on the <code>api</code> guard tells Laravel: "when something is protected by this guard, check for a JWT instead of a session cookie." Making <code>api</code> the default guard means routes using plain <code>auth</code> middleware will use JWT automatically.</p>
+  </div>
+</section>
 
-],
-</code></pre>
+<section class="step">
+  <div class="step-number">06 · Controller</div>
+  <h2>Building the auth controller</h2>
+  <p>This is the heart of the system — a controller that handles registering, logging in, checking who's logged in, refreshing tokens, and logging out.</p>
 
-<hr>
+  <div class="code-card">
+    <div class="code-bar"><span>terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>php artisan make:controller AuthController</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p>This is an Artisan command (Laravel's built-in CLI tool) that scaffolds a blank controller file for you at <code>app/Http/Controllers/AuthController.php</code>.</p>
+  </div>
 
-<h2>Step 7: Update User Model</h2>
+  <div class="code-card">
+    <div class="code-bar"><span>app/Http/Controllers/AuthController.php</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>&lt;?php
 
-<p>Implement JWTSubject interface.</p>
+namespace App\Http\Controllers;
 
-<pre><code>
-namespace App\Models;
-
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
-
-class User extends Authenticatable implements JWTSubject
-{
-
-    protected $fillable=[
-        'name',
-        'email',
-        'password'
-    ];
-
-    protected $hidden=[
-        'password',
-        'remember_token'
-    ];
-
-    protected function casts(): array
-    {
-        return [
-            'password'=>'hashed'
-        ];
-    }
-
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    public function getJWTCustomClaims()
-    {
-        return [];
-    }
-
-}
-</code></pre>
-
-<hr>
-
-<h2>Step 8: Create Authentication Controller</h2>
-
-<pre><code>php artisan make:controller Api/AuthController</code></pre>
-
-Complete controller
-
-<pre><code>
-&lt;?php
-
-namespace App\Http\Controllers\Api;
-
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-
     public function register(Request $request)
     {
-
-        $request->validate([
-            'name'=>'required',
-            'email'=>'required|email|unique:users',
-            'password'=>'required|min:6'
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
         ]);
 
-        $user=User::create([
-            'name'=>$request->name,
-            'email'=>$request->email,
-            'password'=>Hash::make($request->password)
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
         ]);
+
+        $token = JWTAuth::fromUser($user);
 
         return response()->json([
-            'message'=>'User Registered Successfully',
-            'user'=>$user
-        ]);
-
+            'message'      => 'User registered successfully',
+            'user'         => $user,
+            'access_token' => $token,
+            'token_type'   => 'bearer',
+        ], 201);
     }
 
     public function login(Request $request)
     {
+        $credentials = $request->only('email', 'password');
 
-        $credentials=$request->only('email','password');
+        $validator = Validator::make($credentials, [
+            'email'    => 'required|email',
+            'password' => 'required|string',
+        ]);
 
-        if(!$token=Auth::guard('api')->attempt($credentials))
-        {
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
 
-            return response()->json([
-                'error'=>'Invalid Credentials'
-            ],401);
-
+        if (! $token = JWTAuth::attempt($credentials)) {
+            return response()->json(['error' => 'Invalid email or password'], 401);
         }
 
         return $this->respondWithToken($token);
-
     }
 
-    public function profile()
+    public function me()
     {
-
-        return response()->json(Auth::guard('api')->user());
-
+        return response()->json(auth()->user());
     }
 
     public function logout()
     {
+        auth()->logout();
 
-        Auth::guard('api')->logout();
-
-        return response()->json([
-            'message'=>'Logout Successfully'
-        ]);
-
+        return response()->json(['message' => 'Successfully logged out']);
     }
 
     public function refresh()
     {
-
-        return $this->respondWithToken(Auth::guard('api')->refresh());
-
+        return $this->respondWithToken(auth()->refresh());
     }
 
     protected function respondWithToken($token)
     {
-
         return response()->json([
-            'access_token'=>$token,
-            'token_type'=>'Bearer',
-            'expires_in'=>Auth::guard('api')->factory()->getTTL()*60
+            'access_token' => $token,
+            'token_type'   => 'bearer',
+            'expires_in'   => auth()->factory()->getTTL() * 60,
         ]);
-
     }
+}</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here, method by method</span>
+    <ul>
+      <li><strong>register()</strong> — validates the incoming data, hashes the password (never store plain-text passwords), creates the user, then immediately issues them a token with <code>JWTAuth::fromUser()</code> so they don't have to log in separately right after signing up.</li>
+      <li><strong>login()</strong> — checks the email and password against the database using <code>JWTAuth::attempt()</code>. If they match, it returns a signed token; if not, a <code>401</code> error.</li>
+      <li><strong>me()</strong> — a simple endpoint that returns whichever user the current token belongs to. Handy for letting a frontend fetch "who am I logged in as."</li>
+      <li><strong>logout()</strong> — invalidates the current token so it can't be reused.</li>
+      <li><strong>refresh()</strong> — issues a brand-new token and invalidates the old one, so a user can stay logged in without re-entering their password.</li>
+      <li><strong>respondWithToken()</strong> — a small shared helper so every endpoint that returns a token formats its response the same way, including <code>expires_in</code>, calculated from the TTL (time-to-live) setting in <code>config/jwt.php</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="step">
+  <div class="step-number">07 · Routes</div>
+  <h2>Defining the routes</h2>
+  <p>Routes are what connect a URL and HTTP verb to a controller method. These go in <code class="inline">routes/api.php</code>.</p>
+
+  <div class="code-card">
+    <div class="code-bar"><span>routes/api.php</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>&lt;?php
+
+use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Route;
+
+Route::group([
+    'prefix' => 'auth',
+], function ($router) {
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
+    Route::get('me', [AuthController::class, 'me']);
+});</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p><code>Route::group(['prefix' => 'auth'], ...)</code> means every route inside automatically starts with <code>/auth</code>. Since Laravel already prefixes everything in <code>api.php</code> with <code>/api</code>, the final endpoints look like this:</p>
+  </div>
+
+  <table class="endpoint-table">
+    <tr><th>Method &amp; Path</th><th>Purpose</th></tr>
+    <tr><td>POST /api/auth/register</td><td>Create a new account</td></tr>
+    <tr><td>POST /api/auth/login</td><td>Log in and receive a token</td></tr>
+    <tr><td>POST /api/auth/logout</td><td>Invalidate the current token</td></tr>
+    <tr><td>POST /api/auth/refresh</td><td>Exchange an old token for a new one</td></tr>
+    <tr><td>GET /api/auth/me</td><td>Get the currently logged-in user</td></tr>
+  </table>
+</section>
+
+<section class="step">
+  <div class="step-number">08 · Middleware</div>
+  <h2>Protecting routes</h2>
+  <p>Right now, all five routes are wide open — anyone can call <code class="inline">me</code> or <code class="inline">logout</code> without a token. Middleware is how we lock that down.</p>
+
+  <div class="code-card">
+    <div class="code-bar"><span>routes/api.php</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>Route::group([
+    'prefix' => 'auth',
+], function ($router) {
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+
+    Route::group(['middleware' => 'auth:api'], function ($router) {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('refresh', [AuthController::class, 'refresh']);
+        Route::get('me', [AuthController::class, 'me']);
+    });
+});</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p>The inner <code>Route::group(['middleware' => 'auth:api'], ...)</code> wraps just the routes that should require a valid token. Middleware runs before the controller does — if the request has no token, or an invalid one, Laravel stops it and automatically returns a <code>401 Unauthorized</code> response before your controller code even runs.</p>
+  </div>
+</section>
+
+<section class="step">
+  <div class="step-number">09 · Testing</div>
+  <h2>Trying it out with curl</h2>
+  <p>You can test any of these endpoints with Postman, Insomnia, or plain <code class="inline">curl</code> in your terminal.</p>
+
+  <div class="code-card">
+    <div class="code-bar"><span>terminal — register</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>curl -X POST http://localhost:8000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "password": "secret123",
+    "password_confirmation": "secret123"
+  }'</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p>This sends a JSON body to the register endpoint. The response includes an <code>access_token</code> — copy that value, you'll need it for the next requests.</p>
+  </div>
+
+  <div class="code-card">
+    <div class="code-bar"><span>terminal — protected route</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>curl -X GET http://localhost:8000/api/auth/me \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p>The <code>Authorization: Bearer &lt;token&gt;</code> header is how the client proves who it is on every request. If the token is valid, Laravel returns Jane's user details; if it's missing or wrong, you get a <code>401</code> instead.</p>
+  </div>
+</section>
+
+<section class="step">
+  <div class="step-number">10 · Errors</div>
+  <h2>Handling expired tokens gracefully</h2>
+  <p>By default, tokens expire after 60 minutes. When that happens, JWTAuth throws an exception — it's worth catching these so your API returns clean JSON instead of a raw error page.</p>
+
+  <div class="code-card">
+    <div class="code-bar"><span>bootstrap/app.php (Laravel 11+)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <pre>use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
+use Tymon\JWTAuth\Exceptions\JWTException;
+
+->withExceptions(function ($exceptions) {
+    $exceptions->render(function (TokenExpiredException $e, $request) {
+        return response()->json(['error' => 'Token has expired'], 401);
+    });
+
+    $exceptions->render(function (TokenInvalidException $e, $request) {
+        return response()->json(['error' => 'Token is invalid'], 401);
+    });
+
+    $exceptions->render(function (JWTException $e, $request) {
+        return response()->json(['error' => 'Token is missing'], 401);
+    });
+});</pre>
+  </div>
+  <div class="annotation">
+    <span class="tag">What's happening here</span>
+    <p>Each <code>$exceptions->render()</code> call tells Laravel: "if this specific type of error occurs anywhere in the app, respond with this JSON instead of the default error page." This keeps every error your API sends back consistent and easy for a frontend to handle.</p>
+  </div>
+
+  <div class="callout">
+    <span class="tag">Note for older projects</span>
+    <p>On Laravel 10 or earlier, this same logic goes inside the <code>render()</code> method of <code>app/Exceptions/Handler.php</code> instead of <code>bootstrap/app.php</code>.</p>
+  </div>
+</section>
+
+<section class="step">
+  <div class="step-number">11 · Pitfalls</div>
+  <h2>Common beginner mistakes</h2>
+  <ul>
+    <li><strong>Skipping <code class="inline">php artisan jwt:secret</code></strong> — without it, every token fails to sign and you'll get confusing errors.</li>
+    <li><strong>Storing tokens insecurely on the frontend</strong> — for browser apps, prefer an httpOnly cookie over <code class="inline">localStorage</code>, which is exposed to XSS attacks.</li>
+    <li><strong>Making tokens live too long</strong> — a stolen long-lived token is far more dangerous. Pair a short expiry with the refresh endpoint instead.</li>
+    <li><strong>Mixing up guards</strong> — if <code class="inline">auth:api</code> isn't working, double-check <code class="inline">config/auth.php</code> actually points the <code>api</code> guard to the <code>jwt</code> driver.</li>
+    <li><strong>Forgetting the <code class="inline">Accept: application/json</code> header</strong> — without it, Laravel may try to redirect an unauthenticated request to a login page instead of returning JSON.</li>
+  </ul>
+</section>
+
+<section class="step" style="border-bottom:none;">
+  <div class="step-number">12 · Wrap-up</div>
+  <h2>What you've built</h2>
+  <p>You now have a working Laravel API that can register users, log them in, protect routes so only valid tokens get through, refresh a token without asking for a password again, and log a user out. From here, natural next steps include role-based permissions (the <code class="inline">spatie/laravel-permission</code> package is a popular choice), rate-limiting your auth endpoints against brute-force attempts, and writing automated tests for each of these endpoints.</p>
+</section>
 
-}
-</code></pre>
-
-<hr>
-
-<h2>Step 9: Create API Routes</h2>
-
-<p>Open routes/api.php</p>
-
-<pre><code>
-use App\Http\Controllers\Api\AuthController;
-
-Route::post('/register',[AuthController::class,'register']);
-
-Route::post('/login',[AuthController::class,'login']);
-
-Route::middleware('auth:api')->group(function(){
-
-    Route::get('/profile',[AuthController::class,'profile']);
-
-    Route::post('/refresh',[AuthController::class,'refresh']);
-
-    Route::post('/logout',[AuthController::class,'logout']);
-
-});
-</code></pre>
-
-<hr>
-
-<h2>Step 10: Test APIs</h2>
-
-<h3>Register</h3>
-
-<b>POST</b>
-
-<pre><code>/api/register</code></pre>
-
-Request
-
-<pre><code>
-{
-"name":"John",
-"email":"john@example.com",
-"password":"password"
-}
-</code></pre>
-
-<hr>
-
-<h3>Login</h3>
-
-<pre><code>/api/login</code></pre>
-
-Response
-
-<pre><code>
-{
-"access_token":"eyJhbGc...",
-"token_type":"Bearer",
-"expires_in":3600
-}
-</code></pre>
-
-<hr>
-
-<h3>Profile API</h3>
-
-Headers
-
-<pre><code>
-Authorization: Bearer YOUR_TOKEN
-</code></pre>
-
-<hr>
-
-<h3>Logout</h3>
-
-<pre><code>/api/logout</code></pre>
-
-<hr>
-
-<h2>Testing Using Postman</h2>
-
-<table>
-
-<tr>
-<th>Method</th>
-<th>Endpoint</th>
-<th>Authentication</th>
-</tr>
-
-<tr>
-<td>POST</td>
-<td>/register</td>
-<td>No</td>
-</tr>
-
-<tr>
-<td>POST</td>
-<td>/login</td>
-<td>No</td>
-</tr>
-
-<tr>
-<td>GET</td>
-<td>/profile</td>
-<td>Bearer Token</td>
-</tr>
-
-<tr>
-<td>POST</td>
-<td>/refresh</td>
-<td>Bearer Token</td>
-</tr>
-
-<tr>
-<td>POST</td>
-<td>/logout</td>
-<td>Bearer Token</td>
-</tr>
-
-</table>
-
-<hr>
-
-<h2>Common Errors</h2>
-
-<h3>JWT Secret Not Found</h3>
-
-<pre><code>php artisan jwt:secret</code></pre>
-
-<h3>Unauthenticated</h3>
-
-<p>
-Always send the Authorization header:
-</p>
-
-<pre><code>
-Authorization: Bearer YOUR_TOKEN
-</code></pre>
-
-<h3>Token Expired</h3>
-
-<p>
-Use the refresh endpoint to generate a new access token.
-</p>
-
-<hr>
-
-<h2>Advantages of JWT Authentication</h2>
-
-<ul>
-
-<li>No server-side sessions</li>
-
-<li>Stateless authentication</li>
-
-<li>Works perfectly with mobile applications</li>
-
-<li>Easy integration with React, Vue, Angular, Flutter</li>
-
-<li>Scalable for microservices</li>
-
-<li>Secure and lightweight</li>
-
-</ul>
-
-<hr>
-
-<h2>Conclusion</h2>
-
-<p>
-Congratulations! 🎉 You have successfully implemented JWT Authentication in a Laravel API project.
-You learned how to install the JWT package, configure Laravel, register users, authenticate users,
-protect API routes, refresh expired tokens, and log users out securely.
-</p>
-
-<p>
-JWT authentication is widely used in modern web and mobile applications because it is fast,
-stateless, secure, and easy to integrate with frontend frameworks such as React, Vue.js,
-Angular, Flutter, and React Native.
-</p>
-
-<div class="success">
-<strong>Next Step:</strong> Try extending this project by adding email verification,
-password reset, role-based authentication, and refresh token rotation to build a
-production-ready authentication system.
 </div>
+
+<footer>
+  <div class="wrap">
+    <h3>That's the full build.</h3>
+    <p>Every piece — model, guard, controller, routes, middleware — works together to turn a signed string into a stateless proof of identity.</p>
+  </div>
+</footer>
+
+<script>
+function copyCode(btn){
+  const pre = btn.closest('.code-card').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "Copied";
+    setTimeout(() => btn.textContent = original, 1500);
+  });
+}
+</script>
 
 </body>
 </html>
