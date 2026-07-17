@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Authentication in Laravel API - Complete Beginner's Guide</title>
+
+    <style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            line-height:1.8;
+            max-width:1000px;
+            margin:auto;
+            padding:20px;
+            background:#f5f5f5;
+            color:#333;
+        }
+        h1,h2,h3{
+            color:#0d6efd;
+        }
+        pre{
+            background:#272822;
+            color:#f8f8f2;
+            padding:15px;
+            border-radius:8px;
+            overflow:auto;
+        }
+        code{
+            font-family:Consolas;
+        }
+        .note{
+            background:#fff8dc;
+            border-left:5px solid orange;
+            padding:15px;
+            margin:20px 0;
+        }
+        .success{
+            background:#e8f5e9;
+            border-left:5px solid green;
+            padding:15px;
+            margin:20px 0;
+        }
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+        table,th,td{
+            border:1px solid #ddd;
+        }
+        th,td{
+            padding:10px;
+        }
+        th{
+            background:#0d6efd;
+            color:white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>JWT Authentication in Laravel API - Complete Beginner's Guide</h1>
+
+<p>
+Authentication is one of the most important features of any web application.
+Whenever users log in to an application, the server needs a secure way to verify
+their identity for every future request.
+</p>
+
+<p>
+For traditional Laravel web applications, Laravel uses sessions and cookies.
+However, when building REST APIs for mobile applications, React, Vue, Angular,
+Flutter, or other frontend frameworks, session-based authentication isn't the
+best option.
+</p>
+
+<p>
+This is where <strong>JWT (JSON Web Token)</strong> comes into the picture.
+JWT allows the server to authenticate users without storing session data,
+making it perfect for RESTful APIs.
+</p>
+
+<hr>
+
+<h2>What You Will Learn</h2>
+
+<ul>
+    <li>What JWT Authentication is</li>
+    <li>Why JWT is used</li>
+    <li>How JWT works</li>
+    <li>Installing JWT in Laravel</li>
+    <li>User Registration</li>
+    <li>User Login</li>
+    <li>Protecting API Routes</li>
+    <li>Fetching Authenticated User</li>
+    <li>Refreshing Tokens</li>
+    <li>Logging Out</li>
+    <li>Testing APIs using Postman</li>
+</ul>
+
+<hr>
+
+<h2>Prerequisites</h2>
+
+<p>Before starting, make sure you have:</p>
+
+<ul>
+    <li>PHP 8.2 or higher</li>
+    <li>Composer installed</li>
+    <li>Laravel 10, 11, or 12</li>
+    <li>MySQL Database</li>
+    <li>Postman</li>
+</ul>
+
+<hr>
+
+<h2>What is JWT?</h2>
+
+<p>
+JWT stands for <strong>JSON Web Token</strong>.
+It is an open standard used to securely transmit information between two parties
+as a JSON object.
+</p>
+
+<p>
+Whenever a user logs in successfully, the server generates a unique token.
+The client stores this token and sends it with every future API request.
+</p>
+
+<div class="note">
+<strong>Important:</strong>
+The server does not need to remember the logged-in user.
+Everything required is stored inside the JWT token itself.
+</div>
+
+<hr>
+
+<h2>How JWT Authentication Works</h2>
+
+<pre>
+User
+   │
+   │ Login
+   ▼
+Laravel API
+   │
+   │ Verify Email & Password
+   ▼
+Generate JWT Token
+   │
+   ▼
+Return Token
+   │
+   ▼
+Client Stores Token
+   │
+   ▼
+Authorization: Bearer Token
+   │
+   ▼
+Protected API
+</pre>
+
+<hr>
+
+<h2>Step 1 - Create Laravel Project</h2>
+
+<pre><code>composer create-project laravel/laravel jwt-api
+
+cd jwt-api</code></pre>
+
+<hr>
+
+<h2>Step 2 - Install JWT Package</h2>
+
+<p>Install the popular JWT package.</p>
+
+<pre><code>composer require tymon/jwt-auth</code></pre>
+
+<hr>
+
+<h2>Step 3 - Publish Configuration</h2>
+
+<pre><code>php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"</code></pre>
+
+<p>This command creates:</p>
+
+<pre><code>config/jwt.php</code></pre>
+
+<hr>
+
+<h2>Step 4 - Generate Secret Key</h2>
+
+<pre><code>php artisan jwt:secret</code></pre>
+
+<p>Your .env file will now contain:</p>
+
+<pre><code>JWT_SECRET=your_secret_key</code></pre>
+
+<hr>
+
+<h2>Step 5 - Configure Database</h2>
+
+<pre><code>DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=jwt_api
+DB_USERNAME=root
+DB_PASSWORD=</code></pre>
+
+Run migrations.
+
+<pre><code>php artisan migrate</code></pre>
+
+<hr>
+
+<h2>Step 6 - Configure Authentication Guard</h2>
+
+<p>Edit <strong>config/auth.php</strong></p>
+
+<pre><code>'guards' => [
+
+    'api' => [
+        'driver' => 'jwt',
+        'provider' => 'users',
+    ],
+
+],</code></pre>
+
+<hr>
+
+<h2>Step 7 - Update User Model</h2>
+
+<p>Implement JWTSubject interface.</p>
+
+<pre><code>use Tymon\JWTAuth\Contracts\JWTSubject;
+
+class User extends Authenticatable implements JWTSubject
+{
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+}</code></pre>
+
+<hr>
+
+<h2>Step 8 - Create Authentication Controller</h2>
+
+<pre><code>php artisan make:controller Api/AuthController</code></pre>
+
+<p>Create the following methods:</p>
+
+<ul>
+<li>register()</li>
+<li>login()</li>
+<li>profile()</li>
+<li>refresh()</li>
+<li>logout()</li>
+</ul>
+
+<hr>
+
+<h2>Step 9 - Register User</h2>
+
+<p>Endpoint:</p>
+
+<pre><code>POST /api/register</code></pre>
+
+<p>Request:</p>
+
+<pre><code>{
+    "name":"John",
+    "email":"john@example.com",
+    "password":"password"
+}</code></pre>
+
+<hr>
+
+<h2>Step 10 - Login</h2>
+
+<pre><code>POST /api/login</code></pre>
+
+<p>If credentials are correct, Laravel returns:</p>
+
+<pre><code>{
+    "access_token":"eyJhbGc...",
+    "token_type":"Bearer",
+    "expires_in":3600
+}</code></pre>
+
+<div class="success">
+Congratulations! The user is now authenticated.
+</div>
+
+<hr>
+
+<h2>Step 11 - Protect Routes</h2>
+
+<p>Add middleware:</p>
+
+<pre><code>Route::middleware('auth:api')->group(function(){
+
+    Route::get('/profile',[AuthController::class,'profile']);
+
+});</code></pre>
+
+<hr>
+
+<h2>Step 12 - Send Token</h2>
+
+<p>Every request should include:</p>
+
+<pre><code>Authorization: Bearer eyJhbGc....</code></pre>
+
+<hr>
+
+<h2>Step 13 - Get Logged-in User</h2>
+
+<p>Request:</p>
+
+<pre><code>GET /api/profile</code></pre>
+
+<p>Response:</p>
+
+<pre><code>{
+    "id":1,
+    "name":"John",
+    "email":"john@example.com"
+}</code></pre>
+
+<hr>
+
+<h2>Step 14 - Refresh Token</h2>
+
+<pre><code>POST /api/refresh</code></pre>
+
+<p>A new JWT token will be generated.</p>
+
+<hr>
+
+<h2>Step 15 - Logout</h2>
+
+<pre><code>POST /api/logout</code></pre>
+
+<p>The current token becomes invalid.</p>
+
+<hr>
+
+<h2>JWT Authentication Flow</h2>
+
+<pre>
+Register
+    │
+    ▼
+Login
+    │
+    ▼
+Generate JWT
+    │
+    ▼
+Store Token
+    │
+    ▼
+Call Protected APIs
+    │
+    ▼
+Refresh Token
+    │
+    ▼
+Logout
+</pre>
+
+<hr>
+
+<h2>Advantages of JWT Authentication</h2>
+
+<table>
+<tr>
+<th>Feature</th>
+<th>Benefit</th>
+</tr>
+
+<tr>
+<td>Stateless</td>
+<td>No server-side session storage required.</td>
+</tr>
+
+<tr>
+<td>Fast</td>
+<td>Every request contains authentication information.</td>
+</tr>
+
+<tr>
+<td>Secure</td>
+<td>Digitally signed tokens prevent tampering.</td>
+</tr>
+
+<tr>
+<td>Cross Platform</td>
+<td>Works with React, Vue, Angular, Flutter, Android, and iOS.</td>
+</tr>
+
+<tr>
+<td>Scalable</td>
+<td>Ideal for distributed microservices and APIs.</td>
+</tr>
+
+</table>
+
+<hr>
+
+<h2>Common Errors and Solutions</h2>
+
+<h3>JWT_SECRET not set</h3>
+
+<pre><code>php artisan jwt:secret</code></pre>
+
+<h3>Unauthenticated</h3>
+
+<p>
+Check that the Authorization header is correctly set:
+</p>
+
+<pre><code>Authorization: Bearer your_token</code></pre>
+
+<h3>Token Expired</h3>
+
+<p>
+Use the refresh endpoint to obtain a new access token.
+</p>
+
+<h3>Guard Not Working</h3>
+
+<p>
+Ensure the <code>api</code> guard uses the <code>jwt</code> driver and clear the configuration cache:
+</p>
+
+<pre><code>php artisan config:clear
+php artisan cache:clear</code></pre>
+
+<hr>
+
+<h2>Best Practices</h2>
+
+<ul>
+<li>Always use HTTPS in production.</li>
+<li>Never expose your JWT secret key.</li>
+<li>Set an appropriate token expiration time.</li>
+<li>Validate all incoming requests.</li>
+<li>Use Laravel Form Requests for validation.</li>
+<li>Store sensitive data securely.</li>
+<li>Return meaningful API error responses.</li>
+</ul>
+
+<hr>
+
+<h2>Conclusion</h2>
+
+<p>
+JWT Authentication is one of the most widely used authentication methods for REST APIs in Laravel. Unlike session-based authentication, JWT is stateless, making it an excellent choice for SPAs, mobile applications, and microservices. By following this guide, you've learned how to create a Laravel API project, install and configure the JWT package, register users, authenticate logins, protect routes, retrieve authenticated user information, refresh expired tokens, and securely log users out.
+</p>
+
+<p>
+As you continue building APIs, consider adding features like role-based authorization, email verification, password reset, and refresh token rotation to make your application even more secure and production-ready.
+</p>
+
+<hr>
+
+<p style="text-align:center;">
+<strong>Happy Coding! 🚀</strong>
+</p>
+
+</body>
+</html>
