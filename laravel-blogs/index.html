@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Developer Hub</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Arial,sans-serif}
+:root{
+--bg:#f5f7fb;--surface:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--primary:#2563eb;
+}
+body.dark{
+--bg:#0f172a;--surface:#1e293b;--text:#f8fafc;--muted:#94a3b8;--border:#334155;--primary:#3b82f6;
+}
+body{background:var(--bg);color:var(--text);height:100vh;overflow:hidden;transition:.25s}
+header{height:64px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.logo{font-size:22px;font-weight:700}
+.actions{display:flex;gap:10px}
+input{padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)}
+button{border:none;background:var(--primary);color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer}
+.container{display:grid;grid-template-columns:300px 1fr;height:calc(100vh - 64px)}
+aside{background:var(--surface);border-right:1px solid var(--border);overflow:auto}
+h2{padding:20px;border-bottom:1px solid var(--border)}
+.category{padding:10px 20px;font-size:12px;color:var(--muted);text-transform:uppercase}
+.blog{display:block;padding:16px 20px;text-decoration:none;color:var(--text);border-left:4px solid transparent;border-bottom:1px solid var(--border)}
+.blog:hover,.blog.active{background:rgba(37,99,235,.08);border-left-color:var(--primary)}
+.blog p{font-size:13px;color:var(--muted);margin-top:4px}
+.reader{display:flex;flex-direction:column}
+.article{height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;font-weight:700}
+iframe{flex:1;width:100%;border:none;background:#fff}
+.fullscreen .container{grid-template-columns:1fr}
+.fullscreen aside{display:none}
+@media(max-width:768px){
+.container{grid-template-columns:1fr}
+aside{display:none}
+input{width:120px}
+}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">📚 Developer Hub</div>
+<div class="actions">
+<input id="search" placeholder="Search articles">
+<button id="themeBtn" onclick="toggleTheme()">🌙</button>
+<button onclick="toggleFullscreen()">⛶</button>
+</div>
+</header>
+<div class="container">
+<aside>
+<h2>Articles</h2>
+
+<div class="category">Laravel</div>
+<a class="blog active" href="laravel-jwt.html" target="viewer">
+<strong>Laravel JWT Authentication</strong>
+<p>Authentication, API, Middleware</p>
+</a>
+
+<a class="blog" href="laravel-Relationships.html" target="viewer">
+<strong>Laravel Relationships</strong>
+<p>Eloquent Relationship Guide</p>
+</a>
+</aside>
+
+<div class="reader">
+<div class="article">Documentation Preview</div>
+<iframe name="viewer" src="laravel-jwt.html"></iframe>
+</div>
+</div>
+
+<script>
+const search=document.getElementById("search");
+search.oninput=()=>{
+ const q=search.value.toLowerCase();
+ document.querySelectorAll(".blog").forEach(b=>{
+  b.style.display=b.innerText.toLowerCase().includes(q)?"block":"none";
+ });
+};
+
+document.querySelectorAll(".blog").forEach(b=>{
+ b.onclick=()=>{
+  document.querySelectorAll(".blog").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+ };
+});
+
+function toggleFullscreen(){
+ document.body.classList.toggle("fullscreen");
+}
+
+const btn=document.getElementById("themeBtn");
+if(localStorage.getItem("theme")==="dark"){
+ document.body.classList.add("dark");
+ btn.textContent="☀️";
+}
+function toggleTheme(){
+ document.body.classList.toggle("dark");
+ const d=document.body.classList.contains("dark");
+ btn.textContent=d?"☀️":"🌙";
+ localStorage.setItem("theme",d?"dark":"light");
+}
+</script>
+</body>
+</html>
